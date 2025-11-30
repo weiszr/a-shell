@@ -54,7 +54,7 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
-		<key>localWebServerMini.xcscheme_^#shared#^_</key>
+		<key>localWebServer.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>7</integer>
@@ -78,6 +78,11 @@
 			<true/>
 		</dict>
 		<key>224A90352ADD0999006DB9CC</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>2251EBE32EDB7810005604BC</key>
 		<dict>
 			<key>primary</key>
 			<true/>

@@ -176,6 +176,9 @@
 		224DF74C2B76429B00F13C58 /* ssh_agent.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 224DF74B2B76428800F13C58 /* ssh_agent.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2250FDAC281D29A7007C25D1 /* terminfo in Resources */ = {isa = PBXBuildFile; fileRef = 22B114762817CEA200A5BF16 /* terminfo */; };
 		225177C8231663430084B9C1 /* ListPythonFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225177C7231663430084B9C1 /* ListPythonFiles.swift */; };
+		2251EBEC2EDB7815005604BC /* localWebServer.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 2251EBE42EDB7810005604BC /* localWebServer.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2251EBF22EDBA042005604BC /* Kitura in Frameworks */ = {isa = PBXBuildFile; productRef = 2251EBF12EDBA042005604BC /* Kitura */; };
+		2251EBF32EDBA04F005604BC /* URL+isDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C4A02C22E09D9D00E0FAD2 /* URL+isDirectory.swift */; };
 		2253E950295B0D0A00EBE1F3 /* defaultToolbar.txt in Resources */ = {isa = PBXBuildFile; fileRef = 22E337EB2949F4CD00A8F76C /* defaultToolbar.txt */; };
 		225479342B73B77C005041FF /* ssh_cmdA.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 225478B52B7380A5005041FF /* ssh_cmdA.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		225479352B73B790005041FF /* ssh_cmdA.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 225478B52B7380A5005041FF /* ssh_cmdA.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -300,9 +303,6 @@
 		22BF623E23157F2400FEA585 /* cacert.pem in Resources */ = {isa = PBXBuildFile; fileRef = 22BF623D23157F1400FEA585 /* cacert.pem */; };
 		22BF6243231589EC00FEA585 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 22BF6242231589DB00FEA585 /* Settings.bundle */; };
 		22C4A02D22E09D9D00E0FAD2 /* URL+isDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C4A02C22E09D9D00E0FAD2 /* URL+isDirectory.swift */; };
-		22CA0A1E2ED6368B00F6F8DF /* localWebServerMini.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 22CA0A172ED6368A00F6F8DF /* localWebServerMini.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		22CA0A252ED6376E00F6F8DF /* Kitura in Frameworks */ = {isa = PBXBuildFile; productRef = 22CA0A242ED6376E00F6F8DF /* Kitura */; };
-		22CA0A262ED637E100F6F8DF /* URL+isDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C4A02C22E09D9D00E0FAD2 /* URL+isDirectory.swift */; };
 		22D1335D2E61E35B00E76E2E /* Library in Resources */ = {isa = PBXBuildFile; fileRef = 22D1335C2E61E35900E76E2E /* Library */; };
 		22D1424B2E62091700E76E2E /* Python.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22D141912E62090000E76E2E /* Python.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22D1424C2E62091700E76E2E /* Python-_cffi_backend.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22D141922E62090000E76E2E /* Python-_cffi_backend.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1006,6 +1006,13 @@
 			remoteGlobalIDString = 22178EF7257BBBA4008EB2B4;
 			remoteInfo = "a-Shell-mini-Intents";
 		};
+		2251EBE92EDB7812005604BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 22984EE222C93DBC00069497 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2251EBE32EDB7810005604BC;
+			remoteInfo = localWebServer;
+		};
 		22AD872B246EBFFD00F415DE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 22984EE222C93DBC00069497 /* Project object */;
@@ -1019,13 +1026,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 22AD8717246EBFFA00F415DE;
 			remoteInfo = "a-Shell-Intents";
-		};
-		22CA0A1C2ED6368B00F6F8DF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 22984EE222C93DBC00069497 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 22CA0A162ED6368A00F6F8DF;
-			remoteInfo = localWebServerMini;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1101,6 +1101,17 @@
 				224A916C2ADD0999006DB9CC /* a-Shell-mini-IntentsUI.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2251EBEB2EDB7812005604BC /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				2251EBEC2EDB7815005604BC /* localWebServer.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		229D24A1257931E4004A78AC /* Embed Frameworks */ = {
@@ -1898,17 +1909,6 @@
 			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		22CA0A232ED6368B00F6F8DF /* Embed ExtensionKit Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
-			dstSubfolderSpec = 16;
-			files = (
-				22CA0A1E2ED6368B00F6F8DF /* localWebServerMini.appex in Embed ExtensionKit Extensions */,
-			);
-			name = "Embed ExtensionKit Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1982,6 +1982,7 @@
 		224D10BA22CB247900A234EE /* hterm.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = hterm.html; sourceTree = "<group>"; };
 		224DF74B2B76428800F13C58 /* ssh_agent.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ssh_agent.xcframework; path = xcfs/.build/artifacts/xcfs/ssh_agent/ssh_agent.xcframework; sourceTree = "<group>"; };
 		225177C7231663430084B9C1 /* ListPythonFiles.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListPythonFiles.swift; sourceTree = "<group>"; };
+		2251EBE42EDB7810005604BC /* localWebServer.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = localWebServer.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		225478B52B7380A5005041FF /* ssh_cmdA.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ssh_cmdA.xcframework; path = xcfs/.build/artifacts/xcfs/ssh_cmdA/ssh_cmdA.xcframework; sourceTree = "<group>"; };
 		225823702A9624E9009FBBDC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Intents.strings"; sourceTree = "<group>"; };
 		225823712A9624FA009FBBDC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
@@ -2078,7 +2079,6 @@
 		22BF623D23157F1400FEA585 /* cacert.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = cacert.pem; sourceTree = "<group>"; };
 		22BF6242231589DB00FEA585 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		22C4A02C22E09D9D00E0FAD2 /* URL+isDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "URL+isDirectory.swift"; path = "Util/URL+isDirectory.swift"; sourceTree = SOURCE_ROOT; };
-		22CA0A172ED6368A00F6F8DF /* localWebServerMini.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = localWebServerMini.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		22CD01C626F07B8E00C635B9 /* texlive_2021_texmf_dist_fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = texlive_2021_texmf_dist_fonts; path = ODR/texlive_2021_texmf_dist_fonts; sourceTree = "<group>"; };
 		22CD01C726F07B8F00C635B9 /* texlive_2021_texmf_dist_fonts_oft_ttf */ = {isa = PBXFileReference; lastKnownFileType = folder; name = texlive_2021_texmf_dist_fonts_oft_ttf; path = ODR/texlive_2021_texmf_dist_fonts_oft_ttf; sourceTree = "<group>"; };
 		22CD01C826F07B8F00C635B9 /* texlive_2021_texmf_dist */ = {isa = PBXFileReference; lastKnownFileType = folder; name = texlive_2021_texmf_dist; path = ODR/texlive_2021_texmf_dist; sourceTree = "<group>"; };
@@ -2753,7 +2753,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		22CA0A182ED6368A00F6F8DF /* localWebServerMini */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = localWebServerMini; sourceTree = "<group>"; };
+		2251EBE52EDB7810005604BC /* localWebServer */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = localWebServer; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2778,6 +2778,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				224A904D2ADD0999006DB9CC /* ios_system.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2251EBE12EDB7810005604BC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2251EBF22EDBA042005604BC /* Kitura in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2812,14 +2820,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				22AD8723246EBFFC00F415DE /* IntentsUI.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		22CA0A142ED6368A00F6F8DF /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				22CA0A252ED6376E00F6F8DF /* Kitura in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2899,7 +2899,7 @@
 				22AD8724246EBFFC00F415DE /* a-Shell-IntentsUI */,
 				22178EF9257BBBA4008EB2B4 /* a-Shell-mini-Intents */,
 				22178F03257BBBA5008EB2B4 /* a-Shell-mini-IntentsUI */,
-				22CA0A182ED6368A00F6F8DF /* localWebServerMini */,
+				2251EBE52EDB7810005604BC /* localWebServer */,
 				22984EEB22C93DBC00069497 /* Products */,
 				22B1B80D22CB9A5A00F7C452 /* Frameworks */,
 				2271BAFE2D8B064D00A809E5 /* a-Shell-noPython copy-Info.plist */,
@@ -2917,7 +2917,7 @@
 				22178EF8257BBBA4008EB2B4 /* a-Shell-mini-Intents.appex */,
 				22178F01257BBBA5008EB2B4 /* a-Shell-mini-IntentsUI.appex */,
 				224A91702ADD0999006DB9CC /* a-Shell-noPython.app */,
-				22CA0A172ED6368A00F6F8DF /* localWebServerMini.appex */,
+				2251EBE42EDB7810005604BC /* localWebServer.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3914,6 +3914,29 @@
 			productReference = 224A91702ADD0999006DB9CC /* a-Shell-noPython.app */;
 			productType = "com.apple.product-type.application";
 		};
+		2251EBE32EDB7810005604BC /* localWebServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2251EBEE2EDB7815005604BC /* Build configuration list for PBXNativeTarget "localWebServer" */;
+			buildPhases = (
+				2251EBE02EDB7810005604BC /* Sources */,
+				2251EBE12EDB7810005604BC /* Frameworks */,
+				2251EBE22EDB7810005604BC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2251EBE52EDB7810005604BC /* localWebServer */,
+			);
+			name = localWebServer;
+			packageProductDependencies = (
+				2251EBF12EDBA042005604BC /* Kitura */,
+			);
+			productName = localWebServer;
+			productReference = 2251EBE42EDB7810005604BC /* localWebServer.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
+		};
 		22984EE922C93DBC00069497 /* a-Shell */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 22984EFE22C93DBF00069497 /* Build configuration list for PBXNativeTarget "a-Shell" */;
@@ -3948,14 +3971,14 @@
 				229D2488257931E4004A78AC /* Resources */,
 				229D24A1257931E4004A78AC /* Embed Frameworks */,
 				22178EEF257BBB6E008EB2B4 /* Embed App Extensions */,
-				22CA0A232ED6368B00F6F8DF /* Embed ExtensionKit Extensions */,
+				2251EBEB2EDB7812005604BC /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				22178F0B257BBBA6008EB2B4 /* PBXTargetDependency */,
 				22178F0E257BBBA6008EB2B4 /* PBXTargetDependency */,
-				22CA0A1D2ED6368B00F6F8DF /* PBXTargetDependency */,
+				2251EBEA2EDB7812005604BC /* PBXTargetDependency */,
 			);
 			name = "a-Shell-mini";
 			packageProductDependencies = (
@@ -4000,29 +4023,6 @@
 			productReference = 22AD8721246EBFFB00F415DE /* a-Shell-IntentsUI.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		22CA0A162ED6368A00F6F8DF /* localWebServerMini */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 22CA0A202ED6368B00F6F8DF /* Build configuration list for PBXNativeTarget "localWebServerMini" */;
-			buildPhases = (
-				22CA0A132ED6368A00F6F8DF /* Sources */,
-				22CA0A142ED6368A00F6F8DF /* Frameworks */,
-				22CA0A152ED6368A00F6F8DF /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				22CA0A182ED6368A00F6F8DF /* localWebServerMini */,
-			);
-			name = localWebServerMini;
-			packageProductDependencies = (
-				22CA0A242ED6376E00F6F8DF /* Kitura */,
-			);
-			productName = localWebServerMini;
-			productReference = 22CA0A172ED6368A00F6F8DF /* localWebServerMini.appex */;
-			productType = "com.apple.product-type.extensionkit-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -4039,6 +4039,9 @@
 					22178F00257BBBA5008EB2B4 = {
 						CreatedOnToolsVersion = 12.2;
 					};
+					2251EBE32EDB7810005604BC = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					22984EE922C93DBC00069497 = {
 						CreatedOnToolsVersion = 11.0;
 						LastSwiftMigration = 1300;
@@ -4048,9 +4051,6 @@
 					};
 					22AD8720246EBFFB00F415DE = {
 						CreatedOnToolsVersion = 11.4.1;
-					};
-					22CA0A162ED6368A00F6F8DF = {
-						CreatedOnToolsVersion = 26.1.1;
 					};
 				};
 			};
@@ -4083,7 +4083,7 @@
 				22178EF7257BBBA4008EB2B4 /* a-Shell-mini-Intents */,
 				22178F00257BBBA5008EB2B4 /* a-Shell-mini-IntentsUI */,
 				224A90352ADD0999006DB9CC /* a-Shell-noPython */,
-				22CA0A162ED6368A00F6F8DF /* localWebServerMini */,
+				2251EBE32EDB7810005604BC /* localWebServer */,
 			);
 		};
 /* End PBXProject section */
@@ -4134,6 +4134,13 @@
 				224A90652ADD0999006DB9CC /* Preview Assets.xcassets in Resources */,
 				224A90662ADD0999006DB9CC /* Assets.xcassets in Resources */,
 				224A90672ADD0999006DB9CC /* vim in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2251EBE22EDB7810005604BC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4235,13 +4242,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		22CA0A152ED6368A00F6F8DF /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -4288,6 +4288,14 @@
 				224A90492ADD0999006DB9CC /* WkWebViewExtension.swift in Sources */,
 				224A904A2ADD0999006DB9CC /* URL+isDirectory.swift in Sources */,
 				224A904B2ADD0999006DB9CC /* listTeXscripts.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2251EBE02EDB7810005604BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2251EBF32EDBA04F005604BC /* URL+isDirectory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4365,14 +4373,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		22CA0A132ED6368A00F6F8DF /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				22CA0A262ED637E100F6F8DF /* URL+isDirectory.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -4398,6 +4398,11 @@
 			target = 22178EF7257BBBA4008EB2B4 /* a-Shell-mini-Intents */;
 			targetProxy = 224A90392ADD0999006DB9CC /* PBXContainerItemProxy */;
 		};
+		2251EBEA2EDB7812005604BC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2251EBE32EDB7810005604BC /* localWebServer */;
+			targetProxy = 2251EBE92EDB7812005604BC /* PBXContainerItemProxy */;
+		};
 		22AD872C246EBFFD00F415DE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 22AD8720246EBFFB00F415DE /* a-Shell-IntentsUI */;
@@ -4407,11 +4412,6 @@
 			isa = PBXTargetDependency;
 			target = 22AD8717246EBFFA00F415DE /* a-Shell-Intents */;
 			targetProxy = 22AD872E246EBFFD00F415DE /* PBXContainerItemProxy */;
-		};
-		22CA0A1D2ED6368B00F6F8DF /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 22CA0A162ED6368A00F6F8DF /* localWebServerMini */;
-			targetProxy = 22CA0A1C2ED6368B00F6F8DF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -4660,6 +4660,73 @@
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "a-Shell/a-Shell-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2251EBEF2EDB7815005604BC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG8Z23C8YL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = localWebServer;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 AsheKube. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "AsheKube.app.a-Shell-mini.localWebServer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2251EBF02EDB7815005604BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG8Z23C8YL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = localWebServer;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 AsheKube. All rights reserved.";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "AsheKube.app.a-Shell-mini.localWebServer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -5103,77 +5170,6 @@
 			};
 			name = Release;
 		};
-		22CA0A212ED6368B00F6F8DF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG8Z23C8YL;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = localWebServer;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 AsheKube. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "AsheKube.app.a-Shell-mini.localWebServer";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		22CA0A222ED6368B00F6F8DF /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VG8Z23C8YL;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = localWebServer;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 AsheKube. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "AsheKube.app.a-Shell-mini.localWebServer";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -5200,6 +5196,15 @@
 			buildConfigurations = (
 				224A916E2ADD0999006DB9CC /* Debug */,
 				224A916F2ADD0999006DB9CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2251EBEE2EDB7815005604BC /* Build configuration list for PBXNativeTarget "localWebServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2251EBEF2EDB7815005604BC /* Debug */,
+				2251EBF02EDB7815005604BC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -5249,15 +5254,6 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		22CA0A202ED6368B00F6F8DF /* Build configuration list for PBXNativeTarget "localWebServerMini" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				22CA0A212ED6368B00F6F8DF /* Debug */,
-				22CA0A222ED6368B00F6F8DF /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -5272,7 +5268,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		22CA0A242ED6376E00F6F8DF /* Kitura */ = {
+		2251EBF12EDBA042005604BC /* Kitura */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 22F87DAF2EB8A8C9003251CC /* XCRemoteSwiftPackageReference "Kitura" */;
 			productName = Kitura;
