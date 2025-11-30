@@ -16,7 +16,7 @@ import AVFoundation // for media playback
 import TipKit // Display some helpful messages for users
 import Kitura // for our local server for WebAssembly
 import NIOSSL // for TLS (https) authentification
-import ExtensionFoundation // disabled for now
+import ExtensionFoundation
 
 let installQueue = DispatchQueue(label: "installFiles", qos: .userInteractive) // high priority, but not blocking.
 let localServerQueue = DispatchQueue(label: "moveFiles", qos: .userInteractive) // high priority, but not blocking
@@ -44,9 +44,23 @@ struct Message: Identifiable, Codable {
         let returnText: String
     }
 }
-@objc(MessageProtocol)
-protocol MessageProtocol {
-    @objc func send(id: String, message: String)
+
+@available(iOS 26, *)
+func sendMessageToExtension(id: String, message: String) {
+    let newMessage = Message(id: id, message: message)
+    do {
+        try webServerSession?.send(newMessage) { result in
+            switch result {
+            case .success(let reply):
+                NSLog("localWebServer response: \(reply)")
+            case .failure(let error):
+                NSLog("localWebServer error: \(error)")
+            }
+        }
+    }
+    catch {
+        NSLog("Message could not be sent: \(error)")
+    }
 }
 
 func startLocalWebServer() async {
@@ -81,11 +95,16 @@ func startLocalWebServer() async {
                 })
                 webServerProcess = try await AppExtensionProcess(configuration: localWebServerConfig)
                 NSLog("localWebServerProcess started: \(String(describing: webServerProcess))")
-                webServerConnection = try webServerProcess?.makeXPCConnection()
-                webServerConnection?.exportedInterface = NSXPCInterface(with: MessageProtocol.self)
-                webServerConnection?.activate()
-                NSLog("XPC Connection: \(String(describing: webServerConnection))")
+                webServerSession = try webServerProcess?.makeXPCSession()
+                try webServerSession?.activate()
+                NSLog("XPC Session: \(String(describing: webServerSession))")
                 NSLog("localWebServerProcess status: \(String(describing: webServerProcess))")
+                sendMessageToExtension(id: "APPDIR", message: Bundle.main.resourcePath!)
+                sendMessageToExtension(id: "LibraryDir", message: try FileManager().url(for: .libraryDirectory,
+                                                                                    in: .userDomainMask,
+                                                                                    appropriateFor: nil,
+                                                                                    create: true).path)
+                sendMessageToExtension(id: "run", message: "")
                 globalMonitor = monitor
                 return
             } else {
