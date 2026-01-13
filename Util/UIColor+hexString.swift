@@ -69,12 +69,44 @@ extension UIColor {
         return self
     }
     
-    func nonTransparent() -> UIColor {
+    func getBrightness() -> CGFloat {
         var alpha: CGFloat = 1.0
+        var hue: CGFloat = 0.0, saturation: CGFloat = 0.0, brightness: CGFloat = 0.0
+        if self.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return brightness
+        }
+        return 0
+    }
+    
+    func makeTransparent() -> UIColor {
+        var alpha: CGFloat = 1.0
+        var newAlpha: CGFloat = 0.5
+        
+        var red: CGFloat = 0.0, green: CGFloat = 0.0, blue: CGFloat = 0.0
+        if self.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return UIColor(red: red, green: green, blue: blue, alpha: newAlpha)
+        }
+        
+        var hue: CGFloat = 0.0, saturation: CGFloat = 0.0, brightness: CGFloat = 0.0
+        if self.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: newAlpha)
+        }
         
         var white: CGFloat = 0.0
         if self.getWhite(&white, alpha: &alpha) {
-            return UIColor(white: white, alpha: 1.0)
+            return UIColor(white: white, alpha: newAlpha)
+        }
+        
+        return self
+
+    }
+    
+    func nonTransparent() -> UIColor {
+        var alpha: CGFloat = 1.0
+        
+        var red: CGFloat = 0.0, green: CGFloat = 0.0, blue: CGFloat = 0.0
+        if self.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
         }
         
         var hue: CGFloat = 0.0, saturation: CGFloat = 0.0, brightness: CGFloat = 0.0
@@ -82,9 +114,9 @@ extension UIColor {
             return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: 1.0)
         }
         
-        var red: CGFloat = 0.0, green: CGFloat = 0.0, blue: CGFloat = 0.0
-        if self.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+        var white: CGFloat = 0.0
+        if self.getWhite(&white, alpha: &alpha) {
+            return UIColor(white: white, alpha: 1.0)
         }
         
         return self

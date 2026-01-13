@@ -12,6 +12,7 @@ import TipKit // for helpful tips
 var autocompleteRunning = false
 var autocompleteSuggestions: [String] = []
 var autocompletePosition = 0
+var autocompleteOptions = false
 // variables for user interaction with SwiftTerm:
 var commandBeforeCursor = ""
 var commandAfterCursor = ""
@@ -33,9 +34,10 @@ extension SceneDelegate {
         return prefix
     }
     
-    func fillAutocompleteSuggestions(command: String) -> String {
+    func fillAutocompleteSuggestions(command: String) {
         autocompleteSuggestions = []
         autocompletePosition = 0
+        autocompleteOptions = false
         if (currentCommand != "") {
             // a command is running, suggestions are only from command history
             for suggestion in commandHistory {
@@ -61,7 +63,10 @@ extension SceneDelegate {
                     }
                 }
             }
+            // TODO: if there is a pipe (|) in the command, split on the last one, then redo this.
+
             // Are we autocompleting a command or something else?
+            // TODO: this creates problems for "\ " and quoted spaces. We just need first and last components.
             var commandParts = command.components(separatedBy: " ")
             NSLog("commandParts: \(commandParts)")
             if (commandParts.count == 1) {
@@ -93,13 +98,22 @@ extension SceneDelegate {
                 let commandOperatesOn = operatesOn(futureCommand)
                 let optionList = getoptString(futureCommand)
                 let lastElement = commandParts.last
-                var directoryForListing = ""
+                var directoryForListing = lastElement
                 if (lastElement?.first == "-") {
                     // options, like "-l"
                     if (optionList != nil) {
-                        for option in optionList! {
+                        for i in 0..<optionList!.count {
+                            var option = String(optionList![optionList!.index(optionList!.startIndex, offsetBy: i)])
                             if (option != ":") {
+                                if (i < optionList!.count - 1) {
+                                    // if an option is followed by ":", then it expects an argument, so we add a space:
+                                    let nextChar = optionList![optionList!.index(optionList!.startIndex, offsetBy: i + 1)]
+                                    if (nextChar == ":") {
+                                        option = option + " "
+                                    }
+                                }
                                 if (!lastElement!.contains(option)) && (!command.contains("-" + String(option))) {
+                                    autocompleteOptions = true
                                     autocompleteSuggestions.append(String(option))
                                 }
                             }
@@ -111,15 +125,35 @@ extension SceneDelegate {
                         let directoryComponents = lastElement!.split(separator: "/", maxSplits: 1)
                         var environmentVariable = String(directoryComponents[0])
                         environmentVariable.removeFirst()
-                        directoryForListing = String(cString: ios_getenv(environmentVariable)) + "/" + String(directoryComponents[1])
+                        if directoryComponents.count == 1 {
+                            if environmentVariable.hasSuffix("/") {
+                                environmentVariable.removeLast()
+                            }
+                            directoryForListing = String(cString: ios_getenv(environmentVariable)) + "/"
+                        } else {
+                            directoryForListing = String(cString: ios_getenv(environmentVariable)) + "/" + String(directoryComponents[1])
+                        }
                     } else {
                         let environmentVariables = environmentAsArray()
                         for envVar in environmentVariables! {
                             if let envVarString = envVar as? String {
-                                var variableName = "$" + envVarString
+                                let variableName = "$" + envVarString
                                 if variableName.hasPrefix(lastElement!) {
                                     let envVarParts = envVarString.split(separator: "=", maxSplits: 1)
                                     var shortenedSugg = String(envVarParts[0])
+                                    var pointsToDirectory = false
+                                    if (envVarParts.count > 0) {
+                                        if URL(fileURLWithPath: String(envVarParts[1])).isDirectory {
+                                            pointsToDirectory = true
+                                        }
+                                    }
+                                    if (commandOperatesOn == "directory") && !pointsToDirectory {
+                                        continue
+                                    }
+                                    if ((commandOperatesOn == "file") || (commandOperatesOn == "directory")) &&
+                                        (envVarParts.count > 0) && pointsToDirectory {
+                                        shortenedSugg += "/"
+                                    }
                                     shortenedSugg.removeFirst(lastElement!.count - 1)
                                     if (!autocompleteSuggestions.contains(shortenedSugg)) {
                                         autocompleteSuggestions.append(shortenedSugg)
@@ -129,21 +163,166 @@ extension SceneDelegate {
                         }
                     }
                 } else if (lastElement?.first == "~") {
+                    let storedNamesDictionary = UserDefaults.standard.dictionary(forKey: "bookmarkNames") ?? [:]
+                    if (lastElement!.contains("/")) {
+                        let directoryComponents = lastElement!.split(separator: "/", maxSplits: 1)
+                        var bookmarkName = String(directoryComponents[0])
+                        bookmarkName.removeFirst()
+                        if directoryComponents.count == 1 {
+                            if (bookmarkName.hasSuffix("/")) {
+                                bookmarkName.removeLast()
+                            }
+                            if let path = storedNamesDictionary[bookmarkName] as? String {
+                                directoryForListing = path + "/"
+                            } else {
+                                NSLog("Unable to extract path for \(bookmarkName)")
+                            }
+                        } else {
+                            let urlPath = storedNamesDictionary[bookmarkName]
+                            let path = (urlPath as! String)
+                            directoryForListing = path + "/" + String(directoryComponents[1])
+                        }
+                    } else {
+                        var sortedKeys = storedNamesDictionary.keys.sorted() // alphabetical order
+                        if (commandOperatesOn == "directory") {
+                            // sort directories in order of use:
+                            sortedKeys = sortedKeys.sorted(by: { current, next in rankDirectory(dir:"~" + current, base: nil) > rankDirectory(dir:"~" + next, base: nil)})
+                        }
+                        for key in sortedKeys {
+                            var pointsToDirectory = false
+                            if let path = storedNamesDictionary[key] as? String {
+                                if (URL(fileURLWithPath: path).isDirectory) {
+                                    pointsToDirectory = true
+                                }
+                            }
+                            if (commandOperatesOn == "directory") && !pointsToDirectory {
+                                continue
+                            }
+                            var bookmarkName = "~" + key
+                            if bookmarkName.hasPrefix(lastElement!) {
+                                if ((commandOperatesOn == "file") || (commandOperatesOn == "directory")) && pointsToDirectory {
+                                    bookmarkName += "/"
+                                }
+                                bookmarkName.removeFirst(lastElement!.count)
+                                bookmarkName = bookmarkName.replacingOccurrences(of: " ", with: "\\ ")
+                                if (!autocompleteSuggestions.contains(bookmarkName)) {
+                                    autocompleteSuggestions.append(bookmarkName)
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!autocompleteOptions) {
+                    // add the content of the directory in directoryForListing
+                    var prefix = ""
+                    if let directoryForListing = directoryForListing {
+                        var directory = directoryForListing
+                        if (directoryForListing == "") {
+                            directory = "."
+                        }
+                        var matchingPath = URL(fileURLWithPath: directoryForListing).lastPathComponent
+                        if URL(fileURLWithPath: directoryForListing).isDirectory {
+                            matchingPath = ""
+                            if !directory.hasSuffix("/") && (directoryForListing != "") {
+                                prefix = "/"
+                            }
+                        } else {
+                            directory.removeLast(matchingPath.count)
+                            if (directory == "") {
+                                directory = "."
+                            }
+                        }
+                        do {
+                            var filePaths = try FileManager().contentsOfDirectory(atPath: directory)
+                            filePaths.sort() // alphabetical order
+                            if (commandOperatesOn == "directory") {
+                                // sort directories in order of use:
+                                var directoryForSorting = directory
+                                if (directoryForSorting == ".") {
+                                    if (directoryForSorting == ".") {
+                                        directoryForSorting = FileManager().currentDirectoryPath
+                                    } else if (directoryForSorting.hasPrefix("./")) {
+                                        directoryForSorting = directoryForSorting.replacingOccurrences(of: "./", with: FileManager().currentDirectoryPath + "/")
+                                    } else {
+                                        directoryForSorting = FileManager().currentDirectoryPath + "/" + directoryForSorting
+                                    }
+                                }
+                                let localDirCompact = String(cString: ios_getBookmarkedVersion(directoryForSorting.utf8CString))
+                                filePaths = filePaths.sorted(by: { current, next in rankDirectory(dir:current, base: localDirCompact) > rankDirectory(dir:next, base: localDirCompact)})
+                                // NSLog("after sorting: \(filePaths)")
+                            }
+                            // Add all non hidden-files first, then all hidden files:
+                            for filePath in filePaths {
+                                let fullPath = directory + "/" + filePath
+                                // NSLog("path = \(fullPath) , isDirectory: \(URL(fileURLWithPath: fullPath).isDirectory)")
+                                let isDirectory = URL(fileURLWithPath: fullPath).isDirectory
+                                if (commandOperatesOn == "directory") && !isDirectory {
+                                    continue
+                                }
+                                var filePath = fullPath
+                                if (isDirectory) {
+                                    filePath += "/"
+                                }
+                                filePath.removeFirst(directory.count + 1)
+                                if filePath.hasPrefix(".") {
+                                    continue
+                                }
+                                NSLog("Checking \(filePath) against \"\(matchingPath)\": \(filePath.hasPrefix(matchingPath))")
+                                if (matchingPath == "") {
+                                    filePath = prefix + filePath
+                                    filePath = filePath.replacingOccurrences(of: " ", with: "\\ ")
+                                    if (!autocompleteSuggestions.contains(filePath)) {
+                                        autocompleteSuggestions.append(filePath)
+                                    }
+                                } else if filePath.hasPrefix(matchingPath) {
+                                    var shortenedSugg = filePath
+                                    shortenedSugg.removeFirst(matchingPath.count)
+                                    shortenedSugg = shortenedSugg.replacingOccurrences(of: " ", with: "\\ ")
+                                    NSLog("Adding \"\(shortenedSugg)\"")
+                                    if (!autocompleteSuggestions.contains(shortenedSugg)) {
+                                        autocompleteSuggestions.append(shortenedSugg)
+                                    }
+                                }
+                            }
+                            for filePath in filePaths {
+                                let fullPath = directory + "/" + filePath
+                                // NSLog("path = \(fullPath) , isDirectory: \(URL(fileURLWithPath: fullPath).isDirectory)")
+                                let isDirectory = URL(fileURLWithPath: fullPath).isDirectory
+                                if (commandOperatesOn == "directory") && !isDirectory {
+                                    continue
+                                }
+                                var filePath = fullPath
+                                if (isDirectory) {
+                                    filePath += "/"
+                                }
+                                filePath.removeFirst(directory.count + 1)
+                                if !filePath.hasPrefix(".") {
+                                    continue
+                                }
+                                if (matchingPath == "") {
+                                    filePath = prefix + filePath
+                                    filePath = filePath.replacingOccurrences(of: " ", with: "\\ ")
+                                    if (!autocompleteSuggestions.contains(filePath)) {
+                                        autocompleteSuggestions.append(filePath)
+                                    }
+                                } else if filePath.hasPrefix(matchingPath) {
+                                    var shortenedSugg = filePath
+                                    shortenedSugg.removeFirst(matchingPath.count)
+                                    shortenedSugg = shortenedSugg.replacingOccurrences(of: " ", with: "\\ ")
+                                    if (!autocompleteSuggestions.contains(shortenedSugg)) {
+                                        autocompleteSuggestions.append(shortenedSugg)
+                                    }
+                                }
+                            }
+                        }
+                        catch {
+                            NSLog("unable to list files in \(directory): \(error)")
+                        }
+                    }
                     
                 }
-                
-                
             }
         }
-        // TODO: arguments, files, folders, bookmarks, env var
-        // Check if all suggestions start with the same substring:
-        let prefix = longestCommonPrefix(autocompleteSuggestions)
-        for i in 0..<autocompleteSuggestions.count {
-            var shortenedSugg = autocompleteSuggestions[i]
-            shortenedSugg.removeFirst(prefix.count)
-            autocompleteSuggestions[i] = shortenedSugg
-        }
-        return prefix
     }
     
     // prints a string for autocomplete and move the rest of the command around, even if it is over multiple lines.
@@ -167,7 +346,52 @@ extension SceneDelegate {
     func updateAutocomplete(text: String) {
         // remove all suggestions that don't fit the new string
         let currentSuggestion = autocompleteSuggestions[autocompletePosition]
-        autocompleteSuggestions.removeAll(where: { !$0.hasPrefix(text) })
+        if (!autocompleteOptions) {
+            autocompleteSuggestions.removeAll(where: { !$0.hasPrefix(text) })
+        } else {
+            // - remove suggestions that are not options and don't match
+            // - keep suggestions that are not options and match (but shorten them)
+            // - if there is a suggestion that is an option, and matches, and expects and argument, remove all other options but keep history
+            // - (options will be approximated as "suggestions that are one letter or one letter + space)
+            // if there are suggestions from history that fit the new case, keep them and keep autocomplete
+            var optionExpectsArgument = false
+            for s in autocompleteSuggestions {
+                if s == text + " " {
+                    optionExpectsArgument = true
+                    break
+                }
+            }
+            var optionMatch = text
+            if (optionExpectsArgument) {
+                optionMatch += " "
+            }
+            autocompleteSuggestions.removeAll(where: { $0 == optionMatch })
+            if (optionExpectsArgument) {
+                autocompleteSuggestions.removeAll(where: { !$0.hasPrefix(optionMatch) })
+                commandBeforeCursor += " "
+                terminalView?.feed(text: " ")
+                autocompleteOptions = false
+                if (autocompleteSuggestions.count < 1) {
+                    autocompleteRunning = false
+                } else {
+                    autocompletePosition = 0
+                    for i in 0..<autocompleteSuggestions.count {
+                        var shortenedSugg = autocompleteSuggestions[i]
+                        if (shortenedSugg == currentSuggestion) {
+                            autocompletePosition = i
+                        }
+                        shortenedSugg.removeFirst(optionMatch.count)
+                        autocompleteSuggestions[i] = shortenedSugg
+                    }
+                }
+                return
+            } else {
+                autocompleteSuggestions.removeAll(where: { !$0.hasPrefix(optionMatch) && (
+                    ($0.count > 1) &&
+                    !(($0.count == 2) && ($0.hasSuffix(" ")))
+                )})
+            }
+        }
         switch (autocompleteSuggestions.count) {
         case 0:
             stopAutocomplete()
@@ -184,15 +408,26 @@ extension SceneDelegate {
             terminalView?.restoreCursorPosition()
             autocompleteRunning = false
         default:
-            autocompletePosition = 0
+            autocompletePosition = min (autocompletePosition, autocompleteSuggestions.count - 1)
             for i in 0..<autocompleteSuggestions.count {
                 var shortenedSugg = autocompleteSuggestions[i]
                 if (shortenedSugg == currentSuggestion) {
                     autocompletePosition = i
                 }
-                shortenedSugg.removeFirst(text.count)
+                // Shorten all suggestions that are not an option
+                if !autocompleteOptions || !((shortenedSugg.count == 1) || ((shortenedSugg.count == 2) && shortenedSugg.hasSuffix(" "))) {
+                    shortenedSugg.removeFirst(text.count)
+                    autocompleteSuggestions[i] = shortenedSugg
+                }
+            }
+            let prefix = longestCommonPrefix(autocompleteSuggestions)
+            for i in 0..<autocompleteSuggestions.count {
+                var shortenedSugg = autocompleteSuggestions[i]
+                shortenedSugg.removeFirst(prefix.count)
                 autocompleteSuggestions[i] = shortenedSugg
             }
+            commandBeforeCursor += prefix
+            terminalView?.feed(text: prefix) // prints the rest of the line
             terminalView?.saveCursorPosition()
             printAutocompleteString(suggestion: autocompleteSuggestions[autocompletePosition])
             terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
@@ -344,6 +579,18 @@ extension SceneDelegate {
                     }
                 }
             }
+            // terminal sending button event:
+            var cursorTracking = false
+            var cursorTrackingRow = 0
+            var cursorTrackingColumn = 0
+            if (string.hasPrefix(escape + "[M")) {
+                var tracking = string
+                tracking.removeFirst((escape + "[M").count)
+                cursorTracking = true
+                cursorTrackingRow = Int(tracking.last?.asciiValue ?? 32) - 32
+                cursorTrackingColumn = Int(tracking[tracking.index(tracking.startIndex, offsetBy: 1)].asciiValue ?? 32) - 32
+                // NSLog("tracking: \(button?.asciiValue) \((x.asciiValue)! - 32) \((y?.asciiValue)! - 32)")
+            }
             if (currentCommand != "") {
                 // If there is an interactive command running, we send the data to its stdin thread
                 // active pager (interactive command): gets all the input sent through TTY:
@@ -426,7 +673,48 @@ extension SceneDelegate {
             // NSLog("Writing (not interactive) \(command) to stdin")
             // stdin_file_input?.write(data)
             // insert mode does not work, so we keep our own version of the command line.
+            if (cursorTracking) {
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                if let distance = terminalView?.setCursorPosition(x: cursorTrackingColumn - 1, y: cursorTrackingRow - 1) {
+                    let command = commandBeforeCursor + commandAfterCursor
+                    if (distance <= 0) {
+                        // beginning of line
+                        commandBeforeCursor = ""
+                        commandAfterCursor = command
+                    } else {
+                        NSLog("command: \(command) distance: \(distance)")
+                        var length = 0
+                        commandBeforeCursor = ""
+                        for c in command {
+                            var characterWidth = NSAttributedString(string: String(c), attributes: [.font: terminalView?.font]).size().width
+                            if (characterWidth > 1.4 * basicCharWidth) {
+                                length += 2
+                                // "large" characters: takes two columns
+                            } else {
+                                length += 1
+                            }
+                            NSLog("character: \(c) length: \(length) distance: \(distance)")
+                            commandBeforeCursor += String(c)
+                            if (length >= distance) {
+                                break
+                            }
+                        }
+                        if (command.count > commandBeforeCursor.count) {
+                            commandAfterCursor = command
+                            commandAfterCursor.removeFirst(commandBeforeCursor.count)
+                        }
+                        NSLog("\(commandBeforeCursor) -- \(commandAfterCursor)")
+                    }
+                }
+                return
+            }
             NSLog("received string: \"\(string)\"")
+            // remove the copy-paste-select menu if it is visible:
+            if UIMenuController.shared.isMenuVisible {
+                UIMenuController.shared.hideMenu()
+            }
             switch (string) {
             case endOfTransmission:
                 // Stop standard input for the command:
@@ -462,17 +750,17 @@ extension SceneDelegate {
                         printPrompt()
                     }
                 }
+            case "\u{0008}": // control H - delete
+                fallthrough
             case deleteBackward:
                 // send arrow-left, then delete-char, but only if there is something to delete:
-                // This needs to be: currentPosition > cursorPosition
-                // == canMoveLeft?
                 if autocompleteRunning {
                     stopAutocomplete()
                 } else {
                     if (commandBeforeCursor.count > 0) {
                         terminalView?.moveUpIfNeeded()
                         if let lastChar = commandBeforeCursor.last {
-                            NSLog("deleting: \(lastChar)")
+                            NSLog("deleting: \"\(lastChar)\"")
                             commandBeforeCursor.removeLast()
                             let characterWidth = NSAttributedString(string: String(lastChar), attributes: [.font: terminalView?.font]).size().width
                             if (characterWidth > 1.4 * basicCharWidth) {
@@ -484,17 +772,56 @@ extension SceneDelegate {
                             terminalView?.feed(text: escape + "[P")
                         }
                     }
+                    if (commandAfterCursor.count > 0) {
+                        // redraw the end of the line
+                        terminalView?.saveCursorPosition()
+                        terminalView?.clearToEndOfLine()
+                        terminalView?.feed(text: commandAfterCursor)
+                        terminalView?.restoreCursorPosition()
+                    }
                 }
             case tabulation: // autocomplete
-                NSLog("received tab")
+                NSLog("received tab. Autocomplete running: \(autocompleteRunning)")
                 if (autocompleteRunning) {
-                    commandBeforeCursor += autocompleteSuggestions[autocompletePosition]
-                    terminalView?.feed(text: autocompleteSuggestions[autocompletePosition])
-                    autocompleteSuggestions = []
-                    autocompletePosition = 0
-                    autocompleteRunning = false
+                    if (autocompleteOptions) {
+                        // insert the option, keep running autocomplete:
+                        let string = autocompleteSuggestions[autocompletePosition]
+                        commandBeforeCursor += string
+                        terminalView?.feed(text: string) // prints the string
+                        updateAutocomplete(text: string)
+                    } else {
+                        commandBeforeCursor += autocompleteSuggestions[autocompletePosition]
+                        terminalView?.feed(text: autocompleteSuggestions[autocompletePosition])
+                        if (autocompleteSuggestions[autocompletePosition].hasSuffix("/")) {
+                            // single suggestion, is a directory: fill again but don't force
+                            fillAutocompleteSuggestions(command: commandBeforeCursor)
+                            NSLog("suggestions: \(autocompleteSuggestions)")
+                            if (autocompleteSuggestions.count > 0) {
+                                terminalView?.saveCursorPosition()
+                                printAutocompleteString(suggestion: autocompleteSuggestions[autocompletePosition])
+                                terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                                terminalView?.restoreCursorPosition()
+                                autocompleteRunning = true
+                            } else {
+                                autocompleteRunning = false
+                            }
+                        } else {
+                            autocompleteSuggestions = []
+                            autocompletePosition = 0
+                            autocompleteRunning = false
+                        }
+                    }
                 } else {
-                    let commonPrefix = fillAutocompleteSuggestions(command: commandBeforeCursor)
+                    // standard version, first time we press tab
+                    fillAutocompleteSuggestions(command: commandBeforeCursor)
+                    // Check if all suggestions start with the same substring:
+                    let commonPrefix = longestCommonPrefix(autocompleteSuggestions)
+                    for i in 0..<autocompleteSuggestions.count {
+                        var shortenedSugg = autocompleteSuggestions[i]
+                        shortenedSugg.removeFirst(commonPrefix.count)
+                        autocompleteSuggestions[i] = shortenedSugg
+                    }
+                    NSLog("suggestions: \(autocompleteSuggestions)")
                     commandBeforeCursor += commonPrefix
                     terminalView?.feed(text: commonPrefix)
                     if (autocompleteSuggestions.count > 1) {
@@ -503,6 +830,18 @@ extension SceneDelegate {
                         terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
                         terminalView?.restoreCursorPosition()
                         autocompleteRunning = true
+                    } else if (commonPrefix.hasSuffix("/")) {
+                        // Single suggestion, is a directory: fill again but don't force acceptance.
+                        fillAutocompleteSuggestions(command: commandBeforeCursor)
+                        if (autocompleteSuggestions.count > 0) {
+                            terminalView?.saveCursorPosition()
+                            printAutocompleteString(suggestion: autocompleteSuggestions[autocompletePosition])
+                            terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                            terminalView?.restoreCursorPosition()
+                            autocompleteRunning = true
+                        } else {
+                            autocompleteRunning = false
+                        }
                     }
                 }
             case escape + "OA": // up arrow (application mode)
@@ -625,6 +964,19 @@ extension SceneDelegate {
                     commandBeforeCursor += string
                     terminalView?.feed(text: string) // prints the string
                     updateAutocomplete(text: string)
+                    if (commandBeforeCursor.hasSuffix("/") && (!autocompleteRunning || (autocompleteSuggestions[autocompletePosition].count == 0))) {
+                        // We completed a directory. Let's list the content:
+                        fillAutocompleteSuggestions(command: commandBeforeCursor)
+                        if (autocompleteSuggestions.count > 0) {
+                            terminalView?.saveCursorPosition()
+                            printAutocompleteString(suggestion: autocompleteSuggestions[autocompletePosition])
+                            terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                            terminalView?.restoreCursorPosition()
+                            autocompleteRunning = true
+                        } else {
+                            autocompleteRunning = false
+                        }
+                    }
                 } else {
                     if (commandAfterCursor.count > 0) {
                         if let firstChar = commandAfterCursor.first {
@@ -641,7 +993,11 @@ extension SceneDelegate {
                         NSLog("Cannot move right")
                     }
                 }
-            case escape:
+            case "\u{0018}": // control X, stop autocomplete
+                fallthrough
+            case "\u{001A}": // control Z, stop autocomplete
+                fallthrough
+            case escape:    // escape, stop autocomplete
                 if (autocompleteRunning) {
                     stopAutocomplete()
                 }
@@ -686,15 +1042,33 @@ extension SceneDelegate {
                     stdin_file_input?.write(data)
                 }
             default:
+                // remove the Copy/Paste/etc menu if it is visible
                 // Default, send to term
                 commandBeforeCursor += string
                 terminalView?.feed(text: string) // prints the string
                 if autocompleteRunning {
                     updateAutocomplete(text: string)
+                    if (commandBeforeCursor.hasSuffix("/") && (!autocompleteRunning || (autocompleteSuggestions[autocompletePosition].count == 0))) {
+                        // We just completed a directory. Let's list the content:
+                        fillAutocompleteSuggestions(command: commandBeforeCursor)
+                        if (autocompleteSuggestions.count > 0) {
+                            terminalView?.saveCursorPosition()
+                            printAutocompleteString(suggestion: autocompleteSuggestions[autocompletePosition])
+                            terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                            terminalView?.restoreCursorPosition()
+                            autocompleteRunning = true
+                        } else {
+                            autocompleteRunning = false
+                        }
+                    }
                 } else {
-                    terminalView?.saveCursorPosition()
-                    terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
-                    terminalView?.restoreCursorPosition()
+                    if (commandAfterCursor.count > 0) {
+                        // redraw the end of the line
+                        terminalView?.saveCursorPosition()
+                        terminalView?.clearToEndOfLine()
+                        terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                        terminalView?.restoreCursorPosition()
+                    }
                 }
             }
         } else {

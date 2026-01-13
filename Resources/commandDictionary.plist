@@ -28,7 +28,7 @@
 		<string>shell.framework/shell</string>
 		<string>basename_main</string>
 		<string></string>
-		<string>none</string>
+		<string>file</string>
 	</array>
 	<key>bc</key>
 	<array>
@@ -49,14 +49,14 @@
 		<string>cbc.framework/cbc</string>
 		<string>main</string>
 		<string></string>
-		<string>none</string>
+		<string>file</string>
 	</array>
 	<key>cd</key>
 	<array>
 		<string>SELF</string>
 		<string>cd_main</string>
 		<string></string>
-		<string>no</string>
+		<string>directory</string>
 	</array>
 	<key>chflags</key>
 	<array>
@@ -140,7 +140,7 @@
 		<string>shell.framework/shell</string>
 		<string>dirname_main</string>
 		<string></string>
-		<string>none</string>
+		<string>file</string>
 	</array>
 	<key>du</key>
 	<array>

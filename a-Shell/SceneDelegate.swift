@@ -1872,6 +1872,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
             terminalCursorColor = cursorColor
             terminalView?.caretColor = terminalCursorColor!
             terminalView?.getTerminal().cursorColor = terminalCursorColor!.toSwiftTermColor()
+            terminalView?.selectedTextBackgroundColor = terminalCursorColor!.makeTransparent()
         }
         if (cursorShape != nil) {
             terminalCursorShape = cursorShape
@@ -4049,6 +4050,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         terminalView?.tintColor = foregroundColor
         terminalView?.caretColor = cursorColor
         terminalView?.backgroundColor = backgroundColor
+        terminalView?.selectedTextBackgroundColor = cursorColor.makeTransparent()
         terminalView?.getTerminal().foregroundColor = foregroundColor.toSwiftTermColor()
         terminalView?.getTerminal().backgroundColor = backgroundColor.toSwiftTermColor()
         terminalView?.getTerminal().cursorColor = cursorColor.toSwiftTermColor()
