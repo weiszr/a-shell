@@ -49,7 +49,7 @@
 		<string>SELF</string>
 		<string>cd_main</string>
 		<string></string>
-		<string>no</string>
+		<string>directory</string>
 	</array>
 	<key>chflags</key>
 	<array>

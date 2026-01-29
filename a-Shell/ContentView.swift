@@ -57,8 +57,8 @@ public var viewBehavior: ViewBehavior = .ignoreSafeArea
 struct ContentView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var frameHeight: CGFloat = 0
-    // @State private var viewBehavior: ViewBehavior = .ignoreSafeArea
-    
+    @State private var frameWidth: CGFloat = 0
+
     let terminalview = Termview()
     
     // Adapt window size to keyboard height, see:
@@ -69,61 +69,60 @@ struct ContentView: View {
                                                                        name: UIResponder.keyboardWillShowNotification)
         .merge(with: NotificationCenter.Publisher(center: .default,
                                                   name: UIResponder.keyboardWillChangeFrameNotification))
-        .merge(with: NotificationCenter.Publisher(center: .default,
-                                                  name: UIResponder.keyboardWillHideNotification)
-               // But we don't want to pass the keyboard rect from keyboardWillHide, so strip the userInfo out before
-               // passing the notification on.
-            .map { Notification(name: $0.name, object: $0.object, userInfo: nil) })
-    // Now map the merged notification stream into a height value.
+        .merge(with: NotificationCenter.Publisher(center: .default, name: UIResponder.keyboardWillHideNotification))
+        // Now map the merged notification stream into a height value.
         .map { (note) -> CGFloat in
             let height = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).size.height
             let width = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).size.width
             let x = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).origin.x
             let y = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).origin.y
             let userInfo = note.userInfo
-            NSLog("SwiftUI Received \(note.name.rawValue) with height \(height) width \(width) origin: \(x) -- \(y)")
+            // NSLog("SwiftUI Received \(note.name.rawValue) with height \(height) width \(width) origin: \(x) -- \(y)")
             return height
-            // This code is not used anymore, but it might be again.
-            // if (height > 200) && (x > 0) {
-            //     NSLog("Undetected floating keyboard detected")
-            // }
-            // We have no way to make the difference between "no keyboard on screen" and "external kb connected"
-            // (some BT keyboards do not register as such) (also floating keyboards have null height)
-            // height == 0 ==> there's probably a keyboard, but we didn't detect it.
-            // height != 0 ==> there is a keyboard, and iOS did detect it, so no need to change the height.
-            // A bit counter-intuitive, but it works.
-            // Except sometimes with a floating keyboard, we get h = 324 and view not set.
-            if (height == 0) && showToolbar { return 40 } // At least the size of the toolbar -- if no keyboard present
-            // Floating window detected (at least on iPad Pro 12.9). 40 is too much, 20 not enough.
-            else if (height == 60) { // floating window detected, external keyboard
-                return 20
-            }
-            else if (height > 200) && (x > 0) && showToolbar {
-                return 40
-            } // Floating keyboard not detected
-            else { return 0 } // SwiftUI has done its job and returned the proper keyboard size.
         }
     
     var body: some View {
-        // resize depending on keyboard. Specify size (.frame) instead of padding.
-        terminalview.onReceive(keyboardChangePublisher) {
-            self.keyboardHeight = $0
-            if (!useSystemToolbar) {
-                frameHeight = UIScreen.main.bounds.height - keyboardHeight - (terminalview.view.inputAccessoryView?.bounds.height ?? 0)
-                NSLog("computed height: \(frameHeight) actual: \(terminalview.view.frame.height)")
-            }
-        }
-        .if(useSystemToolbar) {
-            // required to align the bottom of the terminal to the top of the inputAssistantItem
-            $0.padding(.bottom, 0)
-        }
-        .if(((viewBehavior == .original || viewBehavior == .ignoreSafeArea)) && !useSystemToolbar) {
-            // required on iPhones otherwise the terminal extends behind the inputAccessoryView
-            // It can still be one-two pixels behind it sometimes.
-            $0.frame(width: UIScreen.main.bounds.width, height: frameHeight)
-        }
-        .if(((viewBehavior == .ignoreSafeArea || viewBehavior == .fullScreen)) && useSystemToolbar) {
-            $0.ignoresSafeArea(.container, edges: .bottom)
+        GeometryReader {geometry in
+            // resize depending on keyboard. Specify size (.frame) instead of padding.
+            terminalview
+                .onReceive(keyboardChangePublisher) {
+                    keyboardHeight = $0
+                    frameWidth = terminalview.view.frame.width
+                    if (UIDevice.current.model.hasPrefix("iPhone")) {
+                        if (frameWidth > UIScreen.main.bounds.width) {
+                            frameWidth = UIScreen.main.bounds.width
+                        }
+                    } else {
+                        if (frameWidth > geometry.size.width) {
+                            frameWidth = geometry.size.width
+                        }
+                    }
+                    if (!useSystemToolbar) {
+                        // iPhones (mostly) and iPads with not-system toolbars
+                        NSLog("Scene: \(UIScreen.main.bounds) terminal frame: \(terminalview.view.frame) geometry: \(geometry.size)")
+                        if (UIDevice.current.model.hasPrefix("iPhone")) {
+                            // geometry.size.height is wildly over the place on iPhones
+                            frameHeight = UIScreen.main.bounds.height - keyboardHeight;
+                        } else { // iPads
+                            frameHeight = geometry.size.height - keyboardHeight;
+                        }
+                        if showToolbar && UIDevice.current.model.hasPrefix("iPhone") && (UIScreen.main.bounds.height > UIScreen.main.bounds.width) {
+                            // terminalview.view.inputAccessoryView!.bounds says the toolbar has a height of 35, but it's too much
+                            // keyboard height takes into account the toolbar height in landscape mode, not in portrait
+                            // It's probably a bug that will be fixed at some point
+                            frameHeight -= 30
+                        }
+                    } else {
+                        // iPads with system toolbar
+                        frameHeight = geometry.size.height - keyboardHeight;
+                    }
+                }
+                .if(viewBehavior == .original || viewBehavior == .ignoreSafeArea) {
+                    $0.frame(height: frameHeight).position(x: frameWidth / 2, y: frameHeight / 2)
+                }
+                .if(((viewBehavior == .ignoreSafeArea || viewBehavior == .fullScreen)) && useSystemToolbar) {
+                    $0.ignoresSafeArea(.container, edges: .bottom)
+                }
         }
     }
 }

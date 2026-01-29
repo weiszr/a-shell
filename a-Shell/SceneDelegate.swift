@@ -556,34 +556,28 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     } else {
                         terminalView!.send(txt: escape + "[A")
                     }
-                    break
                 case "down":
                     if terminalView!.getTerminal().applicationCursor {
                         terminalView!.send(txt: escape + "OB")
                     } else {
                         terminalView!.send(txt: escape + "[B")
                     }
-                    break
                 case "left":
                     if terminalView!.getTerminal().applicationCursor {
                         terminalView!.send(txt: escape + "OD")
                     } else {
                         terminalView!.send(txt: escape + "[D")
                     }
-                    break
                 case "right":
                     if terminalView!.getTerminal().applicationCursor {
                         terminalView!.send(txt: escape + "OC")
                     } else {
                         terminalView!.send(txt: escape + "[C")
                     }
-                    break
                 case "copy":
                     terminalView?.copy()
-                    break
                 case "cut":
                     terminalView?.cut(sender)
-                    break
                 case "control":
                     controlOn = !controlOn;
                     if #available(iOS 15.0, *) {
@@ -595,10 +589,8 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                         sender.image = controlOn ? UIImage(systemName: "chevron.up.square.fill")!.withConfiguration(configuration) :
                         UIImage(systemName: "chevron.up.square")!.withConfiguration(configuration)
                     }
-                    break
                 case "selectAll":
                     terminalView?.selectAll()
-                    break
                 default:
                     break
                 }
@@ -1189,17 +1181,14 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     //aAdDehHjlnrstTuvVwW@! # $ [ ]
                 case "\\a": // ASCII bell character (07)
                     newPrompt += "\u{0007}"
-                    break
                 case "\\A": // current time in 24-hour HH:MM format
                     let format = DateFormatter()
                     format.dateFormat = "HH:mm"
                     newPrompt += format.string(from: Date())
-                    break
                 case "\\d": // the date in “Weekday Month Date” format (e.g., “Tue May 26”)
                     let format = DateFormatter()
                     format.dateFormat = "E MMM d"
                     newPrompt += format.string(from: Date())
-                    break
                 case "\\D": // \D{format} : the format is passed to strftime(3) and the result is inserted into the prompt string; an empty format results in a locale-specific time representation. The braces are required
                     var formatStringParse = prompt[prompt.index(prompt.startIndex, offsetBy:range.upperBound)..<prompt.endIndex]
                     if (formatStringParse.hasPrefix("{")) {
@@ -1214,41 +1203,32 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                             range = NSRange(prompt.range(of: "}", options: [], range: (prompt.index(prompt.startIndex, offsetBy:range.upperBound)..<prompt.endIndex))!, in: prompt)
                         }
                     }
-                    break
                 case "\\e": // escape character
                     newPrompt += escape
-                    break
                     // hHjlnrstTuvVwW@! # $
                 case "\\h", "\\H": // the hostname up to the first ‘.’ or the hostname
                     // No easy access to hostname, we print the device name:
                     newPrompt += UIDevice.current.name
-                    break
                 case "\\j": // the number of jobs currently managed by the shell
                     newPrompt += "0" // no job management
-                    break
                 case "\\l": // the basename of the shell's terminal device name
                     newPrompt += UIDevice.current.localizedModel
-                    break
                 case "\\n", "\\r": // newline, carriage return
                     newPrompt += subString
-                    break
                 case "\\s": // the name of the shell, the basename of $0 (the portion following the final slash)
                     if let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String {
                         newPrompt += appName
                     } else {
                         newPrompt += "a-Shell"
                     }
-                    break
                 case "\\t": // the current time in 24-hour HH:MM:SS format
                     let format = DateFormatter()
                     format.dateFormat = "HH:mm:ss"
                     newPrompt += format.string(from: Date())
-                    break
                 case "\\T": // the current time in 12-hour HH:MM:SS format
                     let format = DateFormatter()
                     format.dateFormat = "h:mm:ss"
                     newPrompt += format.string(from: Date())
-                    break
                 case "\\u": // username
                     if let username = ios_getenv("USERNAME") {
                         newPrompt += String(utf8String: username) ?? "mobile"
@@ -1269,12 +1249,10 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                         }
                     }
                     newPrompt += "mobile"
-                    break;
                 case "\\v": //  the version of bash (e.g., 2.00)
                     if let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
                         newPrompt += currentVersion
                     }
-                    break
                 case "\\V": // the release of bash, version + patch level (e.g., 2.00.0)
                     if let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
                         newPrompt += currentVersion
@@ -1282,12 +1260,10 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                             newPrompt += " " + currentBuild
                         }
                     }
-                    break
                 case "\\w": // the current working directory, with $HOME abbreviated with a tilde
                     let currentDirectory = FileManager().currentDirectoryPath
                     let path = String(cString: ios_getBookmarkedVersion(currentDirectory.utf8CString))
                     newPrompt += path
-                    break
                 case "\\W": // the basename of the current working directory, with $HOME abbreviated with a tilde
                     let currentDirectory = FileManager().currentDirectoryPath
                     let path = String(cString: ios_getBookmarkedVersion(currentDirectory.utf8CString))
@@ -1297,18 +1273,14 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     } else {
                         newPrompt += path
                     }
-                    break
                 case "\\@": // the current time in 12-hour am/pm format
                     let format = DateFormatter()
                     format.dateFormat = "h:mm a"
                     newPrompt += format.string(from: Date())
-                    break
                 case "\\!", "\\#": //  the history number of this command or the command number of this command
                     newPrompt += String(history.count)
-                    break
                 case "\\$": // if the effective UID is 0, a #, otherwise a $
                     newPrompt += "$"
-                    break
                 case "\\[", "\\]": // supposed to encase zero-length characters. Not needed for a-Shell.
                     break
                 case "\\0", "\\1", "\\2", "\\3", "\\4", "\\5", "\\6", "\\7", "\\8", "\\9": // \nnn: unicode character
@@ -1317,7 +1289,6 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     newPrompt += "\\}"
                     let newRange = prompt.index(prompt.startIndex, offsetBy:range.lowerBound)..<prompt.index(prompt.startIndex, offsetBy: range.upperBound+2)
                     range = NSRange(newRange, in: prompt)
-                    break
                 default:
                     newPrompt += subString
                 }
@@ -1336,11 +1307,13 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
     func printPrompt() {
         guard terminalView != nil else { return }
         lastUsedPrompt = parsePrompt()
-        if (terminalView!.atTheEndOfTheLine()) {
-            terminalView!.feed(text: "\n\r")
+        DispatchQueue.main.async {
+            if (self.terminalView!.atTheEndOfTheLine()) {
+                self.terminalView!.feed(text: "\n\r")
+            }
+            self.terminalView!.feed(text: self.lastUsedPrompt)
+            self.terminalView!.setPromptEnd()
         }
-        terminalView!.feed(text: lastUsedPrompt)
-        terminalView!.setPromptEnd()
     }
     
     func printHistory() {
@@ -1849,57 +1822,55 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
     }
     
     func configWindow(fontSize: Float?, fontName: String?, backgroundColor: UIColor?, foregroundColor: UIColor?, cursorColor: UIColor?, cursorShape: String?, fontLigature: String?) {
-        if (fontSize != nil) {
-            terminalFontSize = fontSize
-        }
-        if (fontName != nil) {
-            terminalFontName = fontName
-        }
-        if let terminalFont = UIFont(name: terminalFontName ?? factoryFontName, size: CGFloat(terminalFontSize ?? factoryFontSize)) {
-            terminalView?.font = terminalFont
-            basicCharWidth = NSAttributedString(string: "m", attributes: [.font: terminalView?.font]).size().width
-        }
-        if (backgroundColor != nil) {
-            terminalBackgroundColor = backgroundColor
-            terminalView?.backgroundColor = terminalBackgroundColor
-        }
-        if (foregroundColor != nil) {
-            terminalForegroundColor = foregroundColor
-            terminalView?.tintColor = terminalForegroundColor
-            terminalView?.getTerminal().foregroundColor = (terminalForegroundColor?.toSwiftTermColor())!
-        }
-        if (cursorColor != nil) {
-            terminalCursorColor = cursorColor
-            terminalView?.caretColor = terminalCursorColor!
-            terminalView?.getTerminal().cursorColor = terminalCursorColor!.toSwiftTermColor()
-            terminalView?.selectedTextBackgroundColor = terminalCursorColor!.makeTransparent()
-        }
-        if (cursorShape != nil) {
-            terminalCursorShape = cursorShape
-            switch (cursorShape!.lowercased()) {
-            case "block":
-                terminalView?.getTerminal().setCursorStyle(.blinkBlock)
-                break
-            case "bar":
-                terminalView?.getTerminal().setCursorStyle(.blinkBar)
-                break
-            case "underline":
-                terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
-                break
-            default:
-                terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
-                break
+        DispatchQueue.main.async { // SwiftTerm changes to the UI must happen on the main thread
+            if (fontSize != nil) {
+                self.terminalFontSize = fontSize
             }
-        }
-        // Update COLORFGBG depending on new color:
-        if (foregroundColor != nil ) || (backgroundColor != nil) {
-            let fg = foregroundColor ?? terminalForegroundColor ?? UIColor.placeholderText.resolvedColor(with: traitCollection)
-            let bg = backgroundColor ?? terminalBackgroundColor ?? UIColor.systemBackground.resolvedColor(with: traitCollection)
-            setEnvironmentFGBG(foregroundColor: fg, backgroundColor: bg)
-        }
-        // TODO: ligatures are activated by default. I'm not sure how to deactivate them with SwiftTerm
-        if (fontLigature != nil) {
-            terminalFontLigature = fontLigature
+            if (fontName != nil) {
+                self.terminalFontName = fontName
+            }
+            if let terminalFont = UIFont(name: self.terminalFontName ?? factoryFontName, size: CGFloat(self.terminalFontSize ?? factoryFontSize)) {
+                self.terminalView?.font = terminalFont
+                self.basicCharWidth = NSAttributedString(string: "m", attributes: [.font: self.terminalView?.font]).size().width
+            }
+            if (backgroundColor != nil) {
+                self.terminalBackgroundColor = backgroundColor
+                self.terminalView?.backgroundColor = self.terminalBackgroundColor
+            }
+            if (foregroundColor != nil) {
+                self.terminalForegroundColor = foregroundColor
+                self.terminalView?.tintColor = self.terminalForegroundColor
+                self.terminalView?.getTerminal().foregroundColor = (self.terminalForegroundColor?.toSwiftTermColor())!
+            }
+            if (cursorColor != nil) {
+                self.terminalCursorColor = cursorColor
+                self.terminalView?.caretColor = self.terminalCursorColor!
+                self.terminalView?.getTerminal().cursorColor = self.terminalCursorColor!.toSwiftTermColor()
+                self.terminalView?.selectedTextBackgroundColor = self.terminalCursorColor!.makeTransparent()
+            }
+            if (cursorShape != nil) {
+                self.terminalCursorShape = cursorShape
+                switch (cursorShape!.lowercased()) {
+                case "block":
+                    self.terminalView?.getTerminal().setCursorStyle(.blinkBlock)
+                case "bar":
+                    self.terminalView?.getTerminal().setCursorStyle(.blinkBar)
+                case "underline":
+                    self.terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
+                default:
+                    self.terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
+                }
+            }
+            // Update COLORFGBG depending on new color:
+            if (foregroundColor != nil ) || (backgroundColor != nil) {
+                let fg = foregroundColor ?? self.terminalForegroundColor ?? UIColor.placeholderText.resolvedColor(with: self.traitCollection)
+                let bg = backgroundColor ?? self.terminalBackgroundColor ?? UIColor.systemBackground.resolvedColor(with: self.traitCollection)
+                self.setEnvironmentFGBG(foregroundColor: fg, backgroundColor: bg)
+            }
+            // TODO: ligatures are activated by default. I'm not sure how to deactivate them with SwiftTerm
+            if (fontLigature != nil) {
+                self.terminalFontLigature = fontLigature
+            }
         }
     }
     
@@ -2120,7 +2091,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         } else {
             // File not found.
             if !path.hasPrefix("-") {
-                fputs("view: file " + path + "not found\n", thread_stderr)
+                fputs("view: file " + path + " not found\n", thread_stderr)
             }
             fputs("usage: view file\n", thread_stderr)
             return -1
@@ -2624,7 +2595,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
             }
             self.currentCommand = ""
             self.pid = 0
-            self.printPrompt();
+            self.printPrompt() // Needs to be in main queue
         }
     }
     
@@ -4057,16 +4028,12 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         switch (cursorShape.lowercased()) {
         case "block":
             terminalView?.getTerminal().setCursorStyle(.blinkBlock)
-            break
         case "bar":
             terminalView?.getTerminal().setCursorStyle(.blinkBar)
-            break
         case "underline":
             terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
-            break
         default:
             terminalView?.getTerminal().setCursorStyle(.blinkUnderline)
-            break
         }
         // TODO: Ligatures are enabled by default on iOS, they're a property of NSAttributeString, not the font.
         if let terminalFont = UIFont(name: fontName, size: CGFloat(fontSize)) {
@@ -4667,9 +4634,10 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
     
     func outputToWebView(string: String) {
         guard (terminalView != nil) else { return }
-        terminalView?.feed(text: string.replacingOccurrences(of:"\n", with: "\n\r")) // prints the string
-        // NSLog("string: \(string)")
-        
+        DispatchQueue.main.async {
+            self.terminalView?.feed(text: string.replacingOccurrences(of:"\n", with: "\n\r")) // prints the string
+            // NSLog("string: \(string)")
+        }
         #if TODO // when webview is visible:
             if (bufferedOutput == nil) {
                 bufferedOutput = string
@@ -5043,7 +5011,7 @@ extension SceneDelegate: WKUIDelegate {
                             stdinString = sendBackToInput + stdinString
                             inputString = components[0]
                         }
-                        // NSLog("sending back: \(inputString)")
+                        NSLog("sending back (Wasm): \(inputString)")
                         var utf8str = inputString.data(using: .utf8)
                         if (utf8str == nil) {
                             utf8str = inputString.data(using: .ascii)

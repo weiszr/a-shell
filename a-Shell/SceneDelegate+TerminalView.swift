@@ -491,6 +491,7 @@ extension SceneDelegate {
             width = newCols
             setenv("COLUMNS", "\(width)".toCString(), 1)
         }
+        NSLog("Resized window: \(newCols) x \(newRows)")
     }
     
     // None of these are called.
@@ -716,7 +717,7 @@ extension SceneDelegate {
                 UIMenuController.shared.hideMenu()
             }
             switch (string) {
-            case endOfTransmission:
+            case endOfTransmission: // also control-D: delete character after cursor
                 // Stop standard input for the command:
                 if (currentCommand != "") {
                     guard stdin_file_input != nil else {
@@ -731,6 +732,25 @@ extension SceneDelegate {
                         // NSLog("Could not close stdin input.")
                     }
                     stdin_file_input = nil
+                } else {
+                    fallthrough // case where control D acts as delete
+                }
+            case escape + "[3~":   // Delete key
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                if (commandAfterCursor.count > 0) {
+                    if let firstChar = commandAfterCursor.first {
+                        commandAfterCursor.removeFirst()
+                        terminalView?.clearToEndOfLine()
+                        terminalView?.saveCursorPosition()
+                        if (commandAfterCursor.count > 0) {
+                            terminalView?.feed(text: commandAfterCursor)
+                        } else {
+                            terminalView?.feed(text: " ")
+                        }
+                        terminalView?.restoreCursorPosition()
+                    }
                 }
             case interrupt:
                 if autocompleteRunning {
@@ -754,7 +774,9 @@ extension SceneDelegate {
                 fallthrough
             case deleteBackward:
                 // send arrow-left, then delete-char, but only if there is something to delete:
-                if autocompleteRunning {
+                if (terminalView!.selectionActive) {
+                    terminalView?.deleteSelection()
+                } else if autocompleteRunning {
                     stopAutocomplete()
                 } else {
                     if (commandBeforeCursor.count > 0) {
@@ -939,7 +961,12 @@ extension SceneDelegate {
             case escape + "OD": // left arrow (application mode)
                 fallthrough
             case escape + "[D": // left arrow
-                if autocompleteRunning {
+                if (terminalView!.selectionActive) {
+                    terminalView?.moveToBeginningOfSelection()
+                    if autocompleteRunning {
+                        stopAutocomplete()
+                    }
+                } else if autocompleteRunning {
                     stopAutocomplete()
                 } else {
                     if (commandBeforeCursor.count > 0) {
@@ -958,7 +985,12 @@ extension SceneDelegate {
             case escape + "OC": // right arrow (application mode)
                 fallthrough
             case escape + "[C": // right arrow
-                if (autocompleteRunning) {
+                if (terminalView!.selectionActive) {
+                    terminalView?.moveToEndOfSelection()
+                    if autocompleteRunning {
+                        stopAutocomplete()
+                    }
+                } else if autocompleteRunning {
                     // autocomplete up to the next word boundary
                     let string = findNextWord(string: autocompleteSuggestions[autocompletePosition])
                     commandBeforeCursor += string
@@ -993,6 +1025,52 @@ extension SceneDelegate {
                         NSLog("Cannot move right")
                     }
                 }
+            case escape + "[1;3D":  // Alt-left arrow, move to previous word
+                fallthrough
+            case escape + "[1;5D":  // Control-left arrow (external keyboard)
+                fallthrough
+            case escape + "b":      // Alt-left arrow (SwiftTerm version)
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                while (commandBeforeCursor.count > 0) {
+                    if let lastChar = commandBeforeCursor.last {
+                        commandBeforeCursor.removeLast()
+                        commandAfterCursor = String(lastChar) + commandAfterCursor
+                        terminalView?.moveUpIfNeeded()
+                        let characterWidth = NSAttributedString(string: String(lastChar), attributes: [.font: terminalView?.font]).size().width
+                        if (characterWidth > 1.4 * basicCharWidth) {
+                            terminalView?.feed(text: escape + "[D")
+                        }
+                        terminalView?.feed(text: escape + "[D")
+                        if !lastChar.isLetter {
+                            break
+                        }
+                    }
+                }
+            case escape + "[1;3C":  // Alt-right arrow, move to next word
+                fallthrough
+            case escape + "[1;5C":  // Control-right arrow (external keyboard)
+                fallthrough
+            case escape + "f":      // Alt-right arrow (SwiftTerm version)
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                while (commandAfterCursor.count > 0) {
+                    if let firstChar = commandAfterCursor.first {
+                        commandAfterCursor.removeFirst()
+                        commandBeforeCursor = commandBeforeCursor + String(firstChar)
+                        terminalView?.moveDownIfNeeded()
+                        let characterWidth = NSAttributedString(string: String(firstChar), attributes: [.font: terminalView?.font]).size().width
+                        if (characterWidth > 1.4 * basicCharWidth) {
+                            terminalView?.feed(text: escape + "[C")
+                        }
+                        terminalView?.feed(text: escape + "[C")
+                        if !firstChar.isLetter {
+                            break
+                        }
+                    }
+                }
             case "\u{0018}": // control X, stop autocomplete
                 fallthrough
             case "\u{001A}": // control Z, stop autocomplete
@@ -1001,6 +1079,55 @@ extension SceneDelegate {
                 if (autocompleteRunning) {
                     stopAutocomplete()
                 }
+            case "\u{0001}": // control A, move to beginning of line
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                commandAfterCursor = commandBeforeCursor + commandAfterCursor
+                commandBeforeCursor = ""
+                terminalView?.moveToBeginningOfLine()
+                terminalView?.getTerminal().updateFullScreen()
+                terminalView?.updateDisplay()
+            case "\u{0005}": // control E, move to end of line
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                commandBeforeCursor = commandBeforeCursor + commandAfterCursor
+                commandAfterCursor = ""
+                terminalView?.moveToEndOfLine()
+                terminalView?.getTerminal().updateFullScreen()
+                terminalView?.updateDisplay()
+            case "\u{000B}": // control K: kill until end of line
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                terminalView?.clearToEndOfLine()
+                commandAfterCursor = ""
+                terminalView?.getTerminal().updateFullScreen()
+                terminalView?.updateDisplay()
+                
+            case "\u{0015}": // control U: kill from cursor to beginning of the line
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                commandBeforeCursor = ""
+                terminalView?.moveToBeginningOfLine()
+                terminalView?.saveCursorPosition()
+                terminalView?.clearToEndOfLine()
+                if (commandAfterCursor.count > 0) {
+                    terminalView?.feed(text: commandAfterCursor) // prints the rest of the line
+                } else {
+                    terminalView?.feed(text: " ") // force redraw
+                }
+                terminalView?.restoreCursorPosition()
+            case escape + "\u{007F}": // alt delete on keyboard: delete (backward) until the beginning of current word
+                NSLog("alt-delete received")
+            case escape + "\u{0017}": // control W: delete (backward) until the next space
+                NSLog("control W received")
+            case "\u{000C}":  // control L: clear screen
+                NSLog("control L received")
+                clearScreen()
+                printPrompt()
             case carriageReturn:
                 if (autocompleteRunning) {
                     // validate current suggestion
@@ -1041,9 +1168,17 @@ extension SceneDelegate {
                     // (store a variable that says the pipe has been closed)
                     stdin_file_input?.write(data)
                 }
+            case " ": // space: end autocomplete
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                fallthrough
             default:
                 // remove the Copy/Paste/etc menu if it is visible
                 // Default, send to term
+                if (terminalView!.selectionActive) {
+                    terminalView?.deleteSelection()
+                }
                 commandBeforeCursor += string
                 terminalView?.feed(text: string) // prints the string
                 if autocompleteRunning {
