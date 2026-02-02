@@ -86,6 +86,9 @@
 		2243B1C32842790300588B51 /* dashC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2243B1B5284278DC00588B51 /* dashC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2243B1C42842790300588B51 /* dashD.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2243B1B6284278DC00588B51 /* dashD.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2243B1C52842790300588B51 /* dashE.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2243B1B7284278DD00588B51 /* dashE.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		224754D52EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224754D42EFBDF2C007C35FE /* SceneDelegate+TerminalView.swift */; };
+		224754D62EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224754D42EFBDF2C007C35FE /* SceneDelegate+TerminalView.swift */; };
+		224754D72EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 224754D42EFBDF2C007C35FE /* SceneDelegate+TerminalView.swift */; };
 		22484B062434F11F00D6BDDA /* node_modules in Resources */ = {isa = PBXBuildFile; fileRef = 22484B052434F11E00D6BDDA /* node_modules */; };
 		2249368226E0F0750053F014 /* kpsewhich.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2249368126E0F05A0053F014 /* kpsewhich.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2249368326E0F0750053F014 /* luahbtex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2249368026E0F0510053F014 /* luahbtex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -206,11 +209,14 @@
 		2275AFAF26CA9B8B00B5BE45 /* ffprobe.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2275AFAB26CA9B6D00B5BE45 /* ffprobe.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		227722EB239D1FA00020037E /* task in Resources */ = {isa = PBXBuildFile; fileRef = 227722EA239D1F9F0020037E /* task */; };
 		22781C4D270196AE00E90579 /* luatex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DC1F6625700F7E0068004E /* luatex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		227A13622F308E97006FD5C1 /* Kitura in Frameworks */ = {isa = PBXBuildFile; productRef = 227A13612F308E97006FD5C1 /* Kitura */; };
+		227A13642F308E9C006FD5C1 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 227A13632F308E9C006FD5C1 /* SwiftTerm */; };
 		227B24842BE01ED5003A8031 /* localCertificate.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24822BE01ED2003A8031 /* localCertificate.pem */; };
 		227B24852BE01ED5003A8031 /* localCertificateKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24832BE01ED3003A8031 /* localCertificateKey.pem */; };
 		227B24862BE033DE003A8031 /* localCertificate.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24822BE01ED2003A8031 /* localCertificate.pem */; };
 		227B24872BE033E1003A8031 /* localCertificateKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24832BE01ED3003A8031 /* localCertificateKey.pem */; };
 		227B248C2BE12FF1003A8031 /* wasm_withWorker.js in Resources */ = {isa = PBXBuildFile; fileRef = 227B248A2BE12FEE003A8031 /* wasm_withWorker.js */; };
+		227EE36E2F0913C000636757 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 227EE36D2F0913C000636757 /* SwiftTerm */; };
 		228E13F625C95F400065D825 /* ios_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 228E13F225C95F2D0065D825 /* ios_system.xcframework */; };
 		228E13F725C95F430065D825 /* ios_system.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 228E13F225C95F2D0065D825 /* ios_system.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		228E13F825C95F4C0065D825 /* ios_system.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 228E13F225C95F2D0065D825 /* ios_system.xcframework */; };
@@ -238,7 +244,6 @@
 		229D247F257931E4004A78AC /* UIDevice+Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2208ACC422D2026E003985D6 /* UIDevice+Name.swift */; };
 		229D2480257931E4004A78AC /* String+C.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2208ACBE22CCE57E003985D6 /* String+C.swift */; };
 		229D2481257931E4004A78AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22984EF122C93DBC00069497 /* ContentView.swift */; };
-		229D2483257931E4004A78AC /* WkWebViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2208ACC822D24703003985D6 /* WkWebViewExtension.swift */; };
 		229D2484257931E4004A78AC /* URL+isDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C4A02C22E09D9D00E0FAD2 /* URL+isDirectory.swift */; };
 		229D2489257931E4004A78AC /* man in Resources */ = {isa = PBXBuildFile; fileRef = 22365230249A39AA00221868 /* man */; };
 		229D248C257931E4004A78AC /* require.js in Resources */ = {isa = PBXBuildFile; fileRef = 22E1B539243DF63E00EA8FBD /* require.js */; };
@@ -1939,6 +1944,7 @@
 		2243B1B7284278DD00588B51 /* dashE.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = dashE.xcframework; path = xcfs/.build/artifacts/xcfs/dashE/dashE.xcframework; sourceTree = "<group>"; };
 		2243B1B8284278DD00588B51 /* dashB.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = dashB.xcframework; path = xcfs/.build/artifacts/xcfs/dashB/dashB.xcframework; sourceTree = "<group>"; };
 		2243B1B9284278E700588B51 /* dash.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = dash.xcframework; path = xcfs/.build/artifacts/xcfs/dash/dash.xcframework; sourceTree = "<group>"; };
+		224754D42EFBDF2C007C35FE /* SceneDelegate+TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SceneDelegate+TerminalView.swift"; sourceTree = "<group>"; };
 		22484B052434F11E00D6BDDA /* node_modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = node_modules; path = Resources/node_modules; sourceTree = "<group>"; };
 		2249367F26E0F03F0053F014 /* makeindex.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = makeindex.xcframework; path = xcfs/.build/artifacts/xcfs/makeindex/makeindex.xcframework; sourceTree = "<group>"; };
 		2249368026E0F0510053F014 /* luahbtex.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = luahbtex.xcframework; path = xcfs/.build/artifacts/xcfs/luahbtex/luahbtex.xcframework; sourceTree = "<group>"; };
@@ -2738,7 +2744,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				227A13622F308E97006FD5C1 /* Kitura in Frameworks */,
 				224A904D2ADD0999006DB9CC /* ios_system.xcframework in Frameworks */,
+				227A13642F308E9C006FD5C1 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2748,6 +2756,7 @@
 			files = (
 				22F87DB12EB8A998003251CC /* Kitura in Frameworks */,
 				228E13F825C95F4C0065D825 /* ios_system.xcframework in Frameworks */,
+				227EE36E2F0913C000636757 /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2882,6 +2891,7 @@
 				22984EED22C93DBC00069497 /* AppDelegate.swift */,
 				22D23117231940B2005B0C12 /* ExtraCommands.swift */,
 				22984EEF22C93DBC00069497 /* SceneDelegate.swift */,
+				224754D42EFBDF2C007C35FE /* SceneDelegate+TerminalView.swift */,
 				22984EF122C93DBC00069497 /* ContentView.swift */,
 				2208ACC822D24703003985D6 /* WkWebViewExtension.swift */,
 				22BF62282314223D00FEA585 /* WKWebView+KeyCommands.swift */,
@@ -3860,6 +3870,8 @@
 			);
 			name = "a-Shell-noPython";
 			packageProductDependencies = (
+				227A13612F308E97006FD5C1 /* Kitura */,
+				227A13632F308E9C006FD5C1 /* SwiftTerm */,
 			);
 			productName = "a-Shell";
 			productReference = 224A91702ADD0999006DB9CC /* a-Shell-noPython.app */;
@@ -3884,6 +3896,7 @@
 			name = "a-Shell";
 			packageProductDependencies = (
 				22F87DB02EB8A998003251CC /* Kitura */,
+				227EE36D2F0913C000636757 /* SwiftTerm */,
 			);
 			productName = "a-Shell";
 			productReference = 22984EEA22C93DBC00069497 /* a-Shell.app */;
@@ -4191,6 +4204,7 @@
 				6BD9536C2BFFCC4000C2508F /* GetFileIntentHandler.swift in Sources */,
 				224A90402ADD0999006DB9CC /* Intents.intentdefinition in Sources */,
 				224A90412ADD0999006DB9CC /* UIColor+hexString.swift in Sources */,
+				224754D62EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */,
 				224A90422ADD0999006DB9CC /* UIViewController+showAlert.swift in Sources */,
 				224A90432ADD0999006DB9CC /* ListPythonFiles.swift in Sources */,
 				6BD953682BFFCC0C00C2508F /* PutFileIntentHandler.swift in Sources */,
@@ -4218,6 +4232,7 @@
 				6BD9536A2BFFCC4000C2508F /* GetFileIntentHandler.swift in Sources */,
 				2291286722D9DAC40004A5EA /* UIColor+hexString.swift in Sources */,
 				226AD81E23436B7A00E5D672 /* UIViewController+showAlert.swift in Sources */,
+				224754D52EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */,
 				221DA54C26F7688100BEA92A /* listTeXscripts.swift in Sources */,
 				225177C8231663430084B9C1 /* ListPythonFiles.swift in Sources */,
 				6BD953662BFFCC0C00C2508F /* PutFileIntentHandler.swift in Sources */,
@@ -4241,6 +4256,7 @@
 				229D2478257931E4004A78AC /* AppDelegate.swift in Sources */,
 				22675A16271C24F400459BEF /* KBWebViewBase.m in Sources */,
 				223A1C1D2A5EDCA700B1B9AD /* Tips.swift in Sources */,
+				224754D72EFBDF48007C35FE /* SceneDelegate+TerminalView.swift in Sources */,
 				229D2479257931E4004A78AC /* SceneDelegate.swift in Sources */,
 				6BD9536B2BFFCC4000C2508F /* GetFileIntentHandler.swift in Sources */,
 				2220059B2871EF3300DC7A23 /* Intents.intentdefinition in Sources */,
@@ -4254,7 +4270,6 @@
 				229D2480257931E4004A78AC /* String+C.swift in Sources */,
 				229D2481257931E4004A78AC /* ContentView.swift in Sources */,
 				6BD9536F2BFFCC6400C2508F /* ExecuteCommandIntentHandler.swift in Sources */,
-				229D2483257931E4004A78AC /* WkWebViewExtension.swift in Sources */,
 				229D2484257931E4004A78AC /* URL+isDirectory.swift in Sources */,
 				22675A15271C24B200459BEF /* listTeXscripts.swift in Sources */,
 			);
@@ -4799,7 +4814,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "a-Shell/a-Shell.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 516;
+				CURRENT_PROJECT_VERSION = 524;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_ASSET_PATHS = "a-Shell/Preview\\ Content";
 				DEVELOPMENT_TEAM = VG8Z23C8YL;
@@ -4823,7 +4838,7 @@
 					"$(SDKROOT)/usr/lib/swift",
 					"$(PROJECT_DIR)/Frameworks",
 				);
-				MARKETING_VERSION = 1.17.4;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_CODE_SIGN_FLAGS = "";
 				OTHER_LDFLAGS = (
 					"-L",
@@ -4854,7 +4869,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "a-Shell/a-Shell.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 516;
+				CURRENT_PROJECT_VERSION = 524;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_ASSET_PATHS = "a-Shell/Preview\\ Content";
 				DEVELOPMENT_TEAM = VG8Z23C8YL;
@@ -4878,7 +4893,7 @@
 					"$(SDKROOT)/usr/lib/swift",
 					"$(PROJECT_DIR)/Frameworks",
 				);
-				MARKETING_VERSION = 1.17.4;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_CODE_SIGN_FLAGS = "";
 				OTHER_LDFLAGS = (
 					"-L",
@@ -5101,6 +5116,21 @@
 /* Begin XCSwiftPackageProductDependency section */
 		2213EE122EE4A148001F0114 /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = SwiftTerm;
+		};
+		227A13612F308E97006FD5C1 /* Kitura */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 22F87DAF2EB8A8C9003251CC /* XCRemoteSwiftPackageReference "Kitura" */;
+			productName = Kitura;
+		};
+		227A13632F308E9C006FD5C1 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2213EE112EE4A148001F0114 /* XCLocalSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+		227EE36D2F0913C000636757 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2213EE112EE4A148001F0114 /* XCLocalSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
 		};
 		22F87DB02EB8A998003251CC /* Kitura */ = {
