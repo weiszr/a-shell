@@ -573,7 +573,9 @@ extension SceneDelegate {
                     // create a control-something character
                     if let controlChar = string.first {
                         if let asciiCode = controlChar.asciiValue {
-                            if (asciiCode > 64) {
+                            if (asciiCode == 0x7f) { // control-delete (on screen keyboard) is mapped to alt-delete
+                                string = escape + "\u{007F}"
+                            } else if (asciiCode > 64) {
                                 string = String(UnicodeScalar(asciiCode - 64))
                             }
                         }
@@ -1120,10 +1122,52 @@ extension SceneDelegate {
                     terminalView?.feed(text: " ") // force redraw
                 }
                 terminalView?.restoreCursorPosition()
+            case escape + "\u{0008}": // alt delete on external keyboard
+                fallthrough
             case escape + "\u{007F}": // alt delete on keyboard: delete (backward) until the beginning of current word
                 NSLog("alt-delete received")
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                while (commandBeforeCursor.count > 0) {
+                    if let lastChar = commandBeforeCursor.last {
+                        if !lastChar.isLetter {
+                            break
+                        }
+                        commandBeforeCursor.removeLast()
+                        terminalView?.moveUpIfNeeded()
+                        let characterWidth = NSAttributedString(string: String(lastChar), attributes: [.font: terminalView?.font]).size().width
+                        if (characterWidth > 1.4 * basicCharWidth) {
+                            terminalView?.feed(text: escape + "[D")
+                            terminalView?.feed(text: escape + "[P")
+                        }
+                        terminalView?.feed(text: escape + "[D")
+                        terminalView?.feed(text: escape + "[P")
+                    }
+                }
+            case "\u{0017}": // control W: delete (backward) until the next space
+                fallthrough
             case escape + "\u{0017}": // control W: delete (backward) until the next space
                 NSLog("control W received")
+                if (autocompleteRunning) {
+                    stopAutocomplete()
+                }
+                while (commandBeforeCursor.count > 0) {
+                    if let lastChar = commandBeforeCursor.last {
+                        if lastChar.isWhitespace {
+                            break
+                        }
+                        commandBeforeCursor.removeLast()
+                        terminalView?.moveUpIfNeeded()
+                        let characterWidth = NSAttributedString(string: String(lastChar), attributes: [.font: terminalView?.font]).size().width
+                        if (characterWidth > 1.4 * basicCharWidth) {
+                            terminalView?.feed(text: escape + "[D")
+                            terminalView?.feed(text: escape + "[P")
+                        }
+                        terminalView?.feed(text: escape + "[D")
+                        terminalView?.feed(text: escape + "[P")
+                    }
+                }
             case "\u{000C}":  // control L: clear screen
                 NSLog("control L received")
                 clearScreen()

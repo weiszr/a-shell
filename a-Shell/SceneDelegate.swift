@@ -790,6 +790,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         DispatchQueue.main.async {
             guard self.terminalView != nil else { return }
             if self.terminalView!.isFirstResponder {
+                showKeyboardAtStartup = false
                 _ = self.terminalView!.resignFirstResponder()
             }
         }

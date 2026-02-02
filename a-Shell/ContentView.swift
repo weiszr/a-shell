@@ -53,9 +53,12 @@ public var showKeyboardAtStartup = true
 // automatic detection causes blank screen when switching back-forth
 // Make this a user-defined setup, with "ignoreSafeArea" the default.
 public var viewBehavior: ViewBehavior = .ignoreSafeArea
+public var latestNotification: String = ""
+public var extendBy: CGFloat = 0
 
 struct ContentView: View {
     @State private var keyboardHeight: CGFloat = 0
+    @State private var lastKeyboardHeight: CGFloat = 0
     @State private var frameHeight: CGFloat = 0
     @State private var frameWidth: CGFloat = 0
 
@@ -77,7 +80,15 @@ struct ContentView: View {
             let x = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).origin.x
             let y = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).origin.y
             let userInfo = note.userInfo
-            // NSLog("SwiftUI Received \(note.name.rawValue) with height \(height) width \(width) origin: \(x) -- \(y)")
+            NSLog("SwiftUI Received \(note.name.rawValue) with height \(height) width \(width) origin: \(x) -- \(y)")
+            if (note.name.rawValue == "UIKeyboardWillShowNotification") {
+                latestNotification = "UIKeyboardWillShowNotification"
+                showKeyboardAtStartup = true
+            } else if (note.name.rawValue == "UIKeyboardWillHideNotification") {
+                latestNotification = "UIKeyboardWillHideNotification"
+            } else {
+                latestNotification = ""
+            }
             return height
         }
     
@@ -86,7 +97,19 @@ struct ContentView: View {
             // resize depending on keyboard. Specify size (.frame) instead of padding.
             terminalview
                 .onReceive(keyboardChangePublisher) {
+                    if (latestNotification == "UIKeyboardWillHideNotification") {
+                        extendBy = lastKeyboardHeight
+                    } else {
+                        extendBy = 0.0
+                    }
                     keyboardHeight = $0
+                    if (keyboardHeight > 56) {
+                        NSLog("setting lastKeyboardHeight to \(keyboardHeight)")
+                        lastKeyboardHeight = keyboardHeight
+                    }
+                    if !showKeyboardAtStartup {
+                        keyboardHeight = 0
+                    }
                     frameWidth = terminalview.view.frame.width
                     if (UIDevice.current.model.hasPrefix("iPhone")) {
                         if (frameWidth > UIScreen.main.bounds.width) {
@@ -99,7 +122,7 @@ struct ContentView: View {
                     }
                     if (!useSystemToolbar) {
                         // iPhones (mostly) and iPads with not-system toolbars
-                        NSLog("Scene: \(UIScreen.main.bounds) terminal frame: \(terminalview.view.frame) geometry: \(geometry.size)")
+                        NSLog("Scene: \(UIScreen.main.bounds) terminal frame: \(terminalview.view.frame) geometry: \(geometry.size) keyboardHeight: \(keyboardHeight)")
                         if (UIDevice.current.model.hasPrefix("iPhone")) {
                             // geometry.size.height is wildly over the place on iPhones
                             frameHeight = UIScreen.main.bounds.height - keyboardHeight;
@@ -114,7 +137,46 @@ struct ContentView: View {
                         }
                     } else {
                         // iPads with system toolbar
-                        frameHeight = geometry.size.height - keyboardHeight;
+                        // This is not perfect: when switching from BT keyboard to on-screen keyboard, SwiftUI
+                        // occasionally gets the sizes wrong. This tries to fix the issues.
+                        NSLog("With system toolbar, keyboardHeight: \(keyboardHeight) terminal frame: \(terminalview.view.frame.height) geometry: \(geometry.size.height) extendBy: \(extendBy) ")
+                        // We're good, except for slideover view (because UIScreen.main.bounds does not apply).
+                        var bottomClip = geometry.safeAreaInsets.bottom
+                        if (extendBy > 0) {
+                            bottomClip = 0
+                        }
+                        NSLog("extendBy, bottom clip: \(bottomClip)  from \(geometry.safeAreaInsets.bottom) topclip: \(geometry.safeAreaInsets.top)")
+                        if (terminalview.view.frame.height == 0.0) {
+                            // keyboard not detected
+                            NSLog("extendBy: keyboard not detected")
+                            if (geometry.safeAreaInsets.bottom > 0) {
+                                // likely floating window, needs extra margin
+                                // Starting floating with BTKB: window too small
+                                frameHeight = min(geometry.size.height - geometry.safeAreaInsets.top, UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top - 15)
+                                NSLog("extendBy, choices 6= \(geometry.size.height - geometry.safeAreaInsets.top), 7= \(UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top - 15)")
+
+                            } else {
+                                frameHeight = min(geometry.size.height - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top, UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top)
+                                NSLog("extendBy, choices 8= \(geometry.size.height - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top), 9= \(UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top)")
+                            }
+                        } else {
+                            if (keyboardHeight == bottomClip) {
+                                // remove bottomClip only once, assume topClip has been removed as well
+                                frameHeight = min(geometry.size.height + extendBy, UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.top)
+                                NSLog("extendBy, choices 1= \(geometry.size.height + extendBy - geometry.safeAreaInsets.top), 2= \(UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.top)")
+                            } else {
+                                if (geometry.safeAreaInsets.bottom > 0) && (geometry.safeAreaInsets.bottom < keyboardHeight) {
+                                    // likely slideover, needs extra margin (but not always slideover, I hate this)
+                                    frameHeight = min(geometry.size.height + extendBy - geometry.safeAreaInsets.top, UIScreen.main.bounds.height - keyboardHeight - bottomClip - geometry.safeAreaInsets.top - 15)
+                                    NSLog("extendBy, choices 10= \(geometry.size.height + extendBy - geometry.safeAreaInsets.top), 11= \(UIScreen.main.bounds.height - keyboardHeight - bottomClip - geometry.safeAreaInsets.top - 15)")
+                                } else {
+                                    // Need choice 4 for slideover + OSC
+                                    frameHeight = min(geometry.size.height + extendBy - geometry.safeAreaInsets.top, UIScreen.main.bounds.height - keyboardHeight - bottomClip - geometry.safeAreaInsets.top)
+                                    NSLog("extendBy, choices 3= \(geometry.size.height + extendBy - geometry.safeAreaInsets.top), 4= \(UIScreen.main.bounds.height - keyboardHeight - bottomClip - geometry.safeAreaInsets.top) 5= \(UIScreen.main.bounds.height - keyboardHeight)")
+                                }
+                            }
+                        }
+                        NSLog("extendBy, After computations, frameHeight= \(frameHeight), max: \(UIScreen.main.bounds.height - keyboardHeight - geometry.safeAreaInsets.bottom - geometry.safeAreaInsets.top)")
                     }
                 }
                 .if(viewBehavior == .original || viewBehavior == .ignoreSafeArea) {
