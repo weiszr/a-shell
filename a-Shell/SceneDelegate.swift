@@ -1133,10 +1133,17 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
             toolbar.items = rightButtonGroup
         } else {
             toolbar.items = leftButtonGroup
+            var useLiquidGlass = false
             if #available(iOS 26, *) {
+                if let preference = Bundle.main.infoDictionary?["UIDesignRequiresCompatibility"] as? Bool {
+                    NSLog("stored UIDesignRequiresCompatibility: \(preference)")
+                    useLiquidGlass = !preference
+                }
+            }
+            if useLiquidGlass {
+                // liquid glass makes the buttons larger, we can't have a middle space on small screens
                 // NSLog("leftButtonGroup: \(leftButtonGroup)")
                 // NSLog("rightButtonGroup: \(rightButtonGroup)")
-                // liquid glass makes the buttons larger, we can't have a middle space on small screens
                 if (screenWidth > 550) || (leftButtonGroup.count + rightButtonGroup.count < 8) {
                     toolbar.items?.append(UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil))
                 }
