@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftTerm
+import WebKit
 
 // SwiftUI extension for fullscreen rendering
 public enum ViewBehavior: Int {
@@ -44,6 +45,59 @@ struct Termview : UIViewRepresentable {
     }
 }
 
+struct Webview : UIViewRepresentable {
+    typealias WebViewType = WKWebView
+
+    let webView: WKWebView
+    var terminalIconName = "pc"
+
+    init() {
+        let config = WKWebViewConfiguration()
+        config.preferences.javaScriptEnabled = true
+        config.preferences.javaScriptCanOpenWindowsAutomatically = true
+        if #available(iOS 15.4, *) {
+            config.preferences.isElementFullscreenEnabled = true
+        }
+        if #available(iOS 14.5, *) {
+            config.preferences.isTextInteractionEnabled = true
+        }
+        config.preferences.setValue(true as Bool, forKey: "allowFileAccessFromFileURLs")
+        config.setValue(true as Bool, forKey: "allowUniversalAccessFromFileURLs")
+        // Does not change anything either way (??? !!!)
+        config.preferences.setValue(true as Bool, forKey: "shouldAllowUserInstalledFonts")
+        config.selectionGranularity = .character; // Could be .dynamic
+        // let preferences = WKWebpagePreferences()
+        // preferences.allowsContentJavaScript = true
+        webView = .init(frame: .zero, configuration: config)
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+        webView.allowsBackForwardNavigationGestures = true
+        if #available(iOS 15.0, *) {
+            webView.keyboardLayoutGuide.topAnchor.constraint(equalTo: webView.bottomAnchor).isActive = true
+            // This is necessary to allow the various edge constraints to engage.
+            webView.keyboardLayoutGuide.followsUndockedKeyboard = true
+        }
+        if #available(iOS 17, *) {
+            terminalIconName = "apple.terminal"
+        }
+    }
+    
+    func makeUIView(context: Context) -> WebViewType {
+        return webView
+    }
+
+    func updateUIView(_ uiView: WebViewType, context: Context) {
+        if (uiView.url != nil) { return } // Already loaded the page
+        uiView.isOpaque = false
+        if (appVersion != "a-Shell-mini") {
+            uiView.load(URLRequest(url: URL(string: "https://localhost:8443/wasm.html")!))
+        } else {
+            uiView.load(URLRequest(url: URL(string: "https://localhost:8334/wasm.html")!))
+        }
+    }
+}
+
 
 public var toolbarShouldBeShown = true
 public var useSystemToolbar = false
@@ -55,14 +109,17 @@ public var showKeyboardAtStartup = true
 public var viewBehavior: ViewBehavior = .ignoreSafeArea
 public var latestNotification: String = ""
 public var extendBy: CGFloat = 0
+public var showWebView = false
 
 struct ContentView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var lastKeyboardHeight: CGFloat = 0
     @State private var frameHeight: CGFloat = 0
     @State private var frameWidth: CGFloat = 0
+    @State private var localShowWebView: Bool = true
 
     let terminalview = Termview()
+    let webview = Webview()
     
     // Adapt window size to keyboard height, see:
     // https://stackoverflow.com/questions/56491881/move-textfield-up-when-thekeyboard-has-appeared-by-using-swiftui-ios
@@ -73,7 +130,7 @@ struct ContentView: View {
         .merge(with: NotificationCenter.Publisher(center: .default,
                                                   name: UIResponder.keyboardWillChangeFrameNotification))
         .merge(with: NotificationCenter.Publisher(center: .default, name: UIResponder.keyboardWillHideNotification))
-        // Now map the merged notification stream into a height value.
+    // Now map the merged notification stream into a height value.
         .map { (note) -> CGFloat in
             let height = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).size.height
             let width = (note.userInfo?[UIWindow.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero).size.width
@@ -99,19 +156,73 @@ struct ContentView: View {
     //        5) click on screen, check that the bottom of the window is at the top of the toolbar
     var body: some View {
         GeometryReader {geometry in
-            terminalview
+            Group {
+                if (showWebView && localShowWebView) {
+                    // NavigationView is deprecated, but the replacement only works for iOS 16 and above.
+                    // I'm trying to keep a-Shell active for iOS 14 and above.
+                    NavigationView {
+                        webview
+                            .toolbar {
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button(action: {
+                                        NSLog("goBackAction()")
+                                        webview.webView.goBack()
+                                    }, label: {
+                                        Image(systemName: "arrow.backward")
+                                    })
+                                }
+                                ToolbarItem(placement: .navigationBarLeading) {
+                                    Button(action: {
+                                        NSLog("terminal clicked")
+                                        localShowWebView = false
+                                        showWebView = false
+                                        showKeyboardAtStartup = true
+                                        _ = terminalview.view.becomeFirstResponder()
+                                        // TODO: restore terminal content, position and scrolling
+                                        if (appVersion != "a-Shell-mini") {
+                                            webview.webView.load(URLRequest(url: URL(string: "https://localhost:8443/wasm.html")!))
+                                        } else {
+                                            NSLog("Loding wasm.html from 8334")
+                                            webview.webView.load(URLRequest(url: URL(string: "https://localhost:8334/wasm.html")!))
+                                        }
+                                    }, label: {
+                                        Image(systemName: webview.terminalIconName) // apple.terminal or pc depending on the version
+                                    })
+                                }
+                                ToolbarItem(placement: .principal) {
+                                    // TODO: it would be great if this could show the title of the web page,
+                                    // but I don't know how to do that.
+                                    Text("a-Shell navigator")
+                                }
+                                ToolbarItem(placement: .navigationBarTrailing) {
+                                    Button(action: {
+                                        NSLog("reload action")
+                                        webview.webView.reload()
+                                    }, label: {
+                                        Image(systemName: "arrow.clockwise.circle")
+                                    })
+                                }
+                                ToolbarItem(placement: .navigationBarTrailing) {
+                                    Button(action: {
+                                        NSLog("goForward action()")
+                                        webview.webView.goForward()
+                                    }, label: {
+                                        Image(systemName: "arrow.forward")
+                                    })
+                                }
+                            }.navigationBarTitleDisplayMode(.inline)
+                    }.navigationViewStyle(.stack) // so the navigation view is full screen on an iPad
+                } else {
+                    terminalview
+                }
+            }
+            // terminalview
                 .onReceive(keyboardChangePublisher) {
-                    if (latestNotification == "UIKeyboardWillHideNotification") {
-                        extendBy = lastKeyboardHeight
-                    } else {
-                        extendBy = 0.0
+                    if (showWebView) {
+                        localShowWebView = true
                     }
                     keyboardHeight = $0
-                    if (keyboardHeight > 56) {
-                        NSLog("setting lastKeyboardHeight to \(keyboardHeight)")
-                        lastKeyboardHeight = keyboardHeight
-                    }
-                    if !showKeyboardAtStartup {
+                    if !showKeyboardAtStartup || (latestNotification == "UIKeyboardWillHideNotification") {
                         keyboardHeight = 0
                     }
                     frameHeight = geometry.size.height
@@ -129,20 +240,20 @@ struct ContentView: View {
                         // iPhones (mostly) and iPads with not-system toolbars
                         NSLog("Scene: \(UIScreen.main.bounds) terminal frame: \(terminalview.view.frame) geometry: \(geometry.size) keyboardHeight: \(keyboardHeight)")
                         if (UIDevice.current.model.hasPrefix("iPhone")) {
-                              // geometry.size.height is wildly all over the place on iPhones
-                              frameHeight = UIScreen.main.bounds.height - keyboardHeight
-                          } else { // iPads
-                              frameHeight = geometry.size.height
-                          }
-                          if showToolbar && UIDevice.current.model.hasPrefix("iPhone") && (UIScreen.main.bounds.height > UIScreen.main.bounds.width) {
-                              // terminalview.view.inputAccessoryView!.bounds says the toolbar has a height of 35, but it's too much
-                              // keyboard height takes into account the toolbar height in landscape mode, not in portrait
-                              // It's probably a bug that will be fixed at some point
-                              frameHeight -= 30
-                          }
+                            // geometry.size.height is wildly all over the place on iPhones
+                            frameHeight = UIScreen.main.bounds.height - keyboardHeight
+                        } else { // iPads
+                            frameHeight = geometry.size.height
+                        }
+                        if showToolbar && UIDevice.current.model.hasPrefix("iPhone") && (UIScreen.main.bounds.height > UIScreen.main.bounds.width) {
+                            // terminalview.view.inputAccessoryView!.bounds says the toolbar has a height of 35, but it's too much
+                            // keyboard height takes into account the toolbar height in landscape mode, not in portrait
+                            // It's probably a bug that will be fixed at some point
+                            frameHeight -= 30
+                        }
                     }
                 }
-                // with useSystemToolbar, it seems to work nicely on the iPad
+            // with useSystemToolbar, it seems to work nicely on the iPad
                 .if((viewBehavior == .original || viewBehavior == .ignoreSafeArea) && !useSystemToolbar) {
                     $0.frame(height: frameHeight).position(x: frameWidth / 2, y: frameHeight / 2)
                 }

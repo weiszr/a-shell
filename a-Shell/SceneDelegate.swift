@@ -1012,8 +1012,8 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
     
     @objc func showEditorToolbar() {
         generateToolbarButtons()
-        // NSLog("leftButtonGroup: \(leftButtonGroup)")
-        // NSLog("rightButtonGroup: \(rightButtonGroup)")
+        NSLog("leftButtonGroup: \(leftButtonGroup)")
+        NSLog("rightButtonGroup: \(rightButtonGroup)")
         DispatchQueue.main.async {
             if (useSystemToolbar) {
                 showToolbar = false
@@ -1670,7 +1670,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                         NSLog("Error in JSC: \(error)")
                         let userInfo = (error as NSError).userInfo
                         fputs("jsc: Error ", self.thread_stderr_copy)
-                        // WKJavaScriptExceptionSourceURL is hterm.html, of course.
+                        // WKJavaScriptExceptionSourceURL is wasm.html, of course.
                         fputs("in file " + command + " ", self.thread_stderr_copy)
                         if let line = userInfo["WKJavaScriptExceptionLineNumber"] as? Int32 {
                             fputs("at line \(line)", self.thread_stderr_copy)
@@ -1698,7 +1698,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                             NSLog("Error in JSC: \(error)")
                             let userInfo = (error as NSError).userInfo
                             fputs("jsc: Error ", self.thread_stderr_copy)
-                            // WKJavaScriptExceptionSourceURL is hterm.html, of course.
+                            // WKJavaScriptExceptionSourceURL is wasm.html, of course.
                             fputs("in file " + command + " ", self.thread_stderr_copy)
                             if let line = userInfo["WKJavaScriptExceptionLineNumber"] as? Int32 {
                                 fputs("at line \(line)", self.thread_stderr_copy)
@@ -2241,6 +2241,10 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         }
     }
 
+    @objc func activateBrowserAction(_ sender: UIBarButtonItem) {
+        showWebView = true
+        hideKeyboard() // hides the keyboard *and* causes SwiftUI to refresh
+    }
     
     var backButton: UIBarButtonItem {
         let configuration = UIImage.SymbolConfiguration(pointSize: fontSize, weight: .bold)
@@ -2256,7 +2260,6 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         return forwardButton
     }
 
-    
     func openURLInWindow(url: URL) {
         // load URL on current window.
         // Can't create back/forward buttons, so there's only the left-edge swipe to go back
@@ -2267,7 +2270,11 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         } else {
             wasmWebView?.load(URLRequest(url: url))
         }
-        // TODO: display wasmWebView instead of terminalView
+        NSLog("setting showWebView to true")
+        showWebView = true
+        hideKeyboard() // hides the keyboard *and* causes SwiftUI to refresh
+        // make "showWebBrowser" button visible in the toolbar
+        bufferedOutput = ""
     }
     
     private func hideButton(tag: Int) -> Bool {
@@ -3480,13 +3487,9 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     }
                 }
             }
-            // We create a separate WkWebView for webAssembly:
-            let config = WKWebViewConfiguration()
-            config.preferences.javaScriptCanOpenWindowsAutomatically = true
-            config.preferences.setValue(true as Bool, forKey: "allowFileAccessFromFileURLs")
-            config.setValue(true as Bool, forKey: "allowUniversalAccessFromFileURLs")
-            wasmWebView = WKWebView(frame: .zero, configuration: config)
-            if #available(iOS 16.4, *) {
+            // The same WkWebView is used for webAssembly and internalbrowser:
+            wasmWebView = contentView?.webview.webView
+            if #available(iOS 16.4, *) {    
                 wasmWebView?.isInspectable = true
             }
             wasmWebView?.isOpaque = false
@@ -4075,11 +4078,15 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
         // Reload the webAssembly interpreter (this will also check if the local server is still running):
-        if (appVersion != "a-Shell-mini") {
-            wasmWebView?.load(URLRequest(url: URL(string: "https://localhost:8443/wasm.html")!))
+        if (!showWebView) {
+            if (appVersion != "a-Shell-mini") {
+                wasmWebView?.load(URLRequest(url: URL(string: "https://localhost:8443/wasm.html")!))
+            } else {
+                NSLog("Loding wasm.html from 8334")
+                wasmWebView?.load(URLRequest(url: URL(string: "https://localhost:8334/wasm.html")!))
+            }
         } else {
-            NSLog("Loding wasm.html from 8334")
-            wasmWebView?.load(URLRequest(url: URL(string: "https://localhost:8334/wasm.html")!))
+            wasmWebView?.reload()
         }
         // Was this window created with a purpose?
         let userActivity = scene.userActivity
@@ -4646,13 +4653,13 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
             self.terminalView?.feed(text: string.replacingOccurrences(of:"\n", with: "\n\r")) // prints the string
             // NSLog("string: \(string)")
         }
-        #if TODO // when webview is visible:
+        if (showWebView) {
             if (bufferedOutput == nil) {
                 bufferedOutput = string
             } else {
                 bufferedOutput! += string
             }
-        #endif
+        }
     }
     
     private func onStdoutButton(_ stdout: FileHandle) {
@@ -5681,7 +5688,7 @@ extension SceneDelegate: WKUIDelegate {
           decidePolicyFor navigationAction: WKNavigationAction,
               preferences: WKWebpagePreferences,
               decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
-        // NSLog("decidePolicyFor WKNavigationAction, navigationType= \(navigationAction.navigationType)")
+        NSLog("decidePolicyFor WKNavigationAction, navigationType= \(navigationAction.navigationType)")
         navigationType = navigationAction.navigationType
         if #available(iOS 14.0, *) {
             preferences.allowsContentJavaScript = true // The default value is true, but let's make sure.
@@ -5719,65 +5726,21 @@ extension SceneDelegate: WKUIDelegate {
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        // NSLog("finished loading, title= \(webView.title ?? "unknown"), url=\(webView.url?.path ?? "unknown"), navigation= \(navigation)")
-        if (webView.url?.path == "/wasm.html") {
+        NSLog("finished loading, title= \(webView.title ?? "unknown"), host= \(webView.url?.host) path=\(webView.url?.path ?? "unknown"), navigation= \(navigation)")
+        if (webView.url?.host == "localhost") && (webView.url?.path == "/wasm.html") {
+            NSLog("Back to the terminal. showWebView: \(showWebView)")
+            // host=="localhost" && path == "/wasm.html" --> make the terminal active
+            // NSLog("Sending backlogged output: \(bufferedOutput)")
+            // if (bufferedOutput != nil) {
+            //     terminalView?.feed(text: bufferedOutput!)
+            //     bufferedOutput = ""
+            // }
             return
         }
         if (webView.title != nil) && (webView.title != "") {
             title = webView.title
         } else {
             title = webView.url?.lastPathComponent
-        }
-        if (webView.url?.path == Bundle.main.resourcePath! + "/hterm.html") {
-            // NSLog("Opening hterm.html")
-            // if (navigationType == .backForward) && (currentCommand == "") {
-            if (navigationType == .backForward) {
-                // reset JS history before reload:
-                windowHistory = "window.commandArray = ["
-                for command in history {
-                    windowHistory += "\"" + command.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\", "
-                }
-                windowHistory += "]; window.commandIndex = \(history.count); window.maxCommandIndex = \(history.count); "
-                webView.stopLoading()
-                webView.reload() // Now *that* gives us the keyboard
-            }
-            // NSLog("Sending backlogged output: \(bufferedOutput)")
-            if (bufferedOutput != nil) {
-                // Same commands as in outputToWebView, but also update prompt while we're at it.
-                let parsedString = bufferedOutput!.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"").replacingOccurrences(of: "\r", with: "\\r").replacingOccurrences(of: "\n", with: "\\n\\r")
-                let JScommand = "window.term_.io.print(\"" + parsedString + "\"); "
-                webView.evaluateJavaScript(JScommand) { (result, error) in
-                    if let error = error {
-                     NSLog("Error in executing JScommand = \(error)")
-                     }
-                     if let result = result {
-                     NSLog("Result of executing JScommand = \(result)")
-                     }
-                }
-                bufferedOutput = ""
-            }
-        } else {
-            if #available(iOS 17, *) {
-                Task { @MainActor in
-                    for await shouldDisplay in startInternalBrowserTip.shouldDisplayUpdates {
-                        NSLog("startInternalBrowserTip: \(shouldDisplay) status: \(startInternalBrowserTip.status)")
-                        if shouldDisplay {
-                            let controller = TipUIPopoverViewController(startInternalBrowserTip, sourceItem: webView)
-                            controller.popoverPresentationController?.canOverlapSourceViewRect = true
-                            let rootVC = self.window?.rootViewController
-                            rootVC?.present(controller, animated: false)
-                        } else {
-                            let rootVC = self.window?.rootViewController
-                            if let controller = rootVC?.presentedViewController {
-                                if controller is TipUIPopoverViewController {
-                                    controller.dismiss(animated: false)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            bufferedOutput = ""
         }
     }
 }

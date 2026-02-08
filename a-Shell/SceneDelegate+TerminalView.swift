@@ -58,8 +58,8 @@ extension SceneDelegate {
                 if suggestion.hasPrefix(command) {
                     var shortenedSugg = suggestion
                     shortenedSugg.removeFirst(command.count)
-                    if (!autocompleteSuggestions.contains(shortenedSugg)) {
-                        autocompleteSuggestions.append(shortenedSugg)
+                    if (!autocompleteSuggestions.contains(shortenedSugg)) && (!autocompleteSuggestions.contains(shortenedSugg + " ")){
+                        autocompleteSuggestions.append(shortenedSugg + " ")
                     }
                 }
             }
