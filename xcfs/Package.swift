@@ -22,57 +22,57 @@ _ = Package(
         ),
         .binaryTarget(
             name: "ios_system",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/ios_system.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ios_system.xcframework.zip",
             checksum: "652ee1891cb0befefb4460e053afa5b4a90795f4c9ff68e917b0b52eb331850c"
         ),
         .binaryTarget(
             name: "awk",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/awk.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/awk.xcframework.zip",
             checksum: "4b4b5cecc9b7a604ca7164f51ac8173247f51b20a550694ae9939067d968b8c8"
         ),
         .binaryTarget(
             name: "curl_ios",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/curl_ios.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/curl_ios.xcframework.zip",
             checksum: "c7cf277bd29974c587c1978e7dbddec399899159b0a143137bb387cdfeaa0510"
         ),
         .binaryTarget(
             name: "files",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/files.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/files.xcframework.zip",
             checksum: "718b30b7d49245ee3b05c93255840d6c6ed9f3d7e61f4ce30632d63b71fb013a"
         ),
         .binaryTarget(
             name: "shell",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/shell.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/shell.xcframework.zip",
             checksum: "c49a5d011591221e9b57273d196f08019e5da657dd1b756bd635775416cf7faa"
         ),
         .binaryTarget(
             name: "ssh_cmd",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
             checksum: "ea630fd16aa74a0110138750517b6550b84610d68bd1e78aa9b394a7c0f1d48f"
         ),
         .binaryTarget(
             name: "ssh_cmdA",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
             checksum: "16f024faf32ef474bbe8a5af0070052d405aa7db9bcaac28054d492e5ef02d3d"
         ),
         .binaryTarget(
             name: "ssh_agent",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
             checksum: "6eac4c5a5fb12ba5c9cbeb21b09a33a56ace5b847aee38ac58e4c5e446ff5b40"
         ),
         .binaryTarget(
             name: "sshd",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
             checksum: "8f0d4d3a3872613935a12fec0e3c8117eb2a0c7abf233960ed0370b8c592b115"
         ),
         .binaryTarget(
             name: "tar",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/tar.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/tar.xcframework.zip",
             checksum: "c283c68affa655fb39aa06e1bdc87ef829e75e1c93131faf04c27c0c68558f4a"
         ),
         .binaryTarget(
             name: "text",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.4/text.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/text.xcframework.zip",
             checksum: "5cbbe8674020a70e3c696330f6ac032d31dab05b3c1765fb24cc806f7f35bf00"
         ),
         // network_ios
