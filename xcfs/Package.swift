@@ -52,17 +52,17 @@ _ = Package(
         ),
         .binaryTarget(
             name: "ssh_cmdA",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmdA.xcframework.zip",
             checksum: "16f024faf32ef474bbe8a5af0070052d405aa7db9bcaac28054d492e5ef02d3d"
         ),
         .binaryTarget(
             name: "ssh_agent",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_agent.xcframework.zip",
             checksum: "6eac4c5a5fb12ba5c9cbeb21b09a33a56ace5b847aee38ac58e4c5e446ff5b40"
         ),
         .binaryTarget(
             name: "sshd",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/ssh_cmd.xcframework.zip",
+            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/sshd.xcframework.zip",
             checksum: "8f0d4d3a3872613935a12fec0e3c8117eb2a0c7abf233960ed0370b8c592b115"
         ),
         .binaryTarget(

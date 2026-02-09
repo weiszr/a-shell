@@ -166,7 +166,13 @@ struct ContentView: View {
                                 ToolbarItem(placement: .navigationBarLeading) {
                                     Button(action: {
                                         NSLog("goBackAction()")
-                                        webview.webView.goBack()
+                                        if (webview.webView.canGoBack) {
+                                            if let backPage = webview.webView.backForwardList.item(at: -1) {
+                                                if backPage.url.host != "localhost" || backPage.url.path != "/wasm.html" {
+                                                    webview.webView.goBack()
+                                                }
+                                            }
+                                        }
                                     }, label: {
                                         Image(systemName: "arrow.backward")
                                     })
@@ -205,7 +211,13 @@ struct ContentView: View {
                                 ToolbarItem(placement: .navigationBarTrailing) {
                                     Button(action: {
                                         NSLog("goForward action()")
-                                        webview.webView.goForward()
+                                        if (webview.webView.canGoForward) {
+                                            if let backPage = webview.webView.backForwardList.item(at: 1) {
+                                                if backPage.url.host != "localhost" || backPage.url.path != "/wasm.html" {
+                                                    webview.webView.goForward()
+                                                }
+                                            }
+                                        }
                                     }, label: {
                                         Image(systemName: "arrow.forward")
                                     })

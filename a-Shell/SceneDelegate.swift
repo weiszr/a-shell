@@ -591,6 +591,8 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                     }
                 case "selectAll":
                     terminalView?.selectAll()
+                case "showBrowser":
+                    activateBrowserAction(sender)
                 default:
                     break
                 }
@@ -810,6 +812,7 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         // check issue with screen size and pico.
         // Scan the configuration file to generate the button groups:
         var configFile = Bundle.main.resourceURL?.appendingPathComponent("defaultToolbar.txt")
+        var showBrowserButtonFound = false // new feature, introduced with v2.0.0. Add it for older implamentations.
         if let documentsUrl = try? FileManager().url(for: .documentDirectory,
                                                      in: .userDomainMask,
                                                      appropriateFor: nil,
@@ -1001,19 +1004,36 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                         if (activeTag != 0) && (activeTag != noneTag) {
                             button!.isHidden = true
                         }
+                        // button to switch back to the internal web browser. Hidden until the browser is activated.
+                        if (title(button!) == "showBrowser") {
+                            showBrowserButtonFound = true
+                            button!.isHidden = true
+                        }
                     }
                     activeButtonGroup.append(button!)
                 }
                 rightButtonGroup.append(contentsOf: activeButtonGroup)
                 rightButtonGroups.append(UIBarButtonItemGroup(barButtonItems: activeButtonGroup, representativeItem: nil))
+                if (!showBrowserButtonFound) {
+                    // old configuration file (before v2.0). Add the showBrowser button manually:
+                    if let systemImage = UIImage(systemName: "network") {
+                        let showBrowserButton = UIBarButtonItem(image: systemImage.withConfiguration(configuration), style: .plain, target: self, action: #selector(self.systemAction(_:)))
+                        showBrowserButton.target = self
+                        showBrowserButton.possibleTitles = ["", "showBrowser"]
+                        if #available(iOS 16.0, *) {
+                            showBrowserButton.isHidden = true
+                        }
+                        leftButtonGroup.append(showBrowserButton)
+                    }
+                }
             }
         }
     }
     
     @objc func showEditorToolbar() {
         generateToolbarButtons()
-        NSLog("leftButtonGroup: \(leftButtonGroup)")
-        NSLog("rightButtonGroup: \(rightButtonGroup)")
+        // NSLog("leftButtonGroup: \(leftButtonGroup)")
+        // NSLog("rightButtonGroup: \(rightButtonGroup)")
         DispatchQueue.main.async {
             if (useSystemToolbar) {
                 showToolbar = false
@@ -2242,6 +2262,9 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
     }
 
     @objc func activateBrowserAction(_ sender: UIBarButtonItem) {
+        if (wasmWebView?.url?.host == "localhost") && (wasmWebView?.url?.path == "/wasm.html") {
+            wasmWebView?.goBack()
+        }
         showWebView = true
         hideKeyboard() // hides the keyboard *and* causes SwiftUI to refresh
     }
@@ -2262,7 +2285,10 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
 
     func openURLInWindow(url: URL) {
         // load URL on current window.
-        // Can't create back/forward buttons, so there's only the left-edge swipe to go back
+        if (wasmWebView?.url?.host == "localhost") && (wasmWebView?.url?.path == "/wasm.html") {
+            wasmWebView?.goBack()
+
+        }
         if (url.scheme == "file") {
             // Create a directory URL:
             let directoryURL = url.deletingLastPathComponent()
@@ -2273,7 +2299,43 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
         NSLog("setting showWebView to true")
         showWebView = true
         hideKeyboard() // hides the keyboard *and* causes SwiftUI to refresh
-        // make "showWebBrowser" button visible in the toolbar
+        // make "showBrowser" button now visible in the toolbar
+        if #available(iOS 16.0, *) {
+            if (!useSystemToolbar) {
+                for button in editorToolbar.items! {
+                    if title(button) == "showBrowser" {
+                        button.isHidden = false
+                        break
+                    }
+                }
+            } else {
+                var foundBrowser = false
+                if let leftButtonGroups = terminalView?.inputAssistantItem.leadingBarButtonGroups {
+                    for leftButtonGroup in leftButtonGroups {
+                        for button in leftButtonGroup.barButtonItems {
+                            if title(button) == "showBrowser" {
+                                button.isHidden = false
+                                foundBrowser = true
+                                break
+                            }
+                        }
+                    }
+                }
+                if (!foundBrowser) {
+                    if let rightButtonGroups = terminalView?.inputAssistantItem.trailingBarButtonGroups {
+                        for rightButtonGroup in rightButtonGroups {
+                            for button in rightButtonGroup.barButtonItems {
+                                if title(button) == "showBrowser" {
+                                    foundBrowser = true
+                                    button.isHidden = false
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         bufferedOutput = ""
     }
     
@@ -2465,7 +2527,9 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                                     representativeItem.isHidden = self.hideButton(tag: representativeItem.tag)
                                 }
                                 leftButtonGroup.barButtonItems.forEach { button in
-                                    button.isHidden = self.hideButton(tag: button.tag)
+                                    if (self.title(button) != "showBrowser") {
+                                        button.isHidden = self.hideButton(tag: button.tag)
+                                    }
                                 }
                             }
                             self.terminalView?.inputAssistantItem.trailingBarButtonGroups.forEach { rightButtonGroup in
@@ -2473,12 +2537,16 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                                     representativeItem.isHidden = self.hideButton(tag: representativeItem.tag)
                                 }
                                 rightButtonGroup.barButtonItems.forEach { button in
-                                    button.isHidden = self.hideButton(tag: button.tag)
+                                    if (self.title(button) != "showBrowser") {
+                                        button.isHidden = self.hideButton(tag: button.tag)
+                                    }
                                 }
                             }
                         } else {
                             self.editorToolbar.items?.forEach { button in
-                                button.isHidden = self.hideButton(tag: button.tag)
+                                if (self.title(button) != "showBrowser") {
+                                    button.isHidden = self.hideButton(tag: button.tag)
+                                }
                             }
                         }
                     }
@@ -2576,7 +2644,9 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                             }
                             leftButtonGroup.barButtonItems.forEach { button in
                                 if (button.tag != 0) {
-                                    button.isHidden = !(button.tag == self.noneTag)
+                                    if (self.title(button) != "showBrowser") {
+                                        button.isHidden = !(button.tag == self.noneTag)
+                                    }
                                 }
                             }
                         }
@@ -2588,14 +2658,18 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
                             }
                             rightButtonGroup.barButtonItems.forEach { button in
                                 if (button.tag != 0) {
-                                    button.isHidden = !(button.tag == self.noneTag)
+                                    if (self.title(button) != "showBrowser") {
+                                        button.isHidden = !(button.tag == self.noneTag)
+                                    }
                                 }
                             }
                         }
                     } else {
                         self.editorToolbar.items?.forEach { button in
                             if (button.tag != 0) {
-                                button.isHidden = !(button.tag == self.noneTag)
+                                if (self.title(button) != "showBrowser") {
+                                    button.isHidden = !(button.tag == self.noneTag)
+                                }
                             }
                         }
                         if #available(iOS 26, *) {
